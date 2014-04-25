@@ -10,6 +10,8 @@
 | 			BairClaw and EPOS motor controllers. 
 |--------------------------------------------------------------------------
  ========================================================================*/
+#ifndef _EPOSInterface_h
+#define _EPOSInterface_h
 
 #include <iostream>
 #include <fstream>
@@ -34,38 +36,49 @@
 #include <barrett/products/product_manager.h>
 
 
-#define MAXCURRENTALLOWED 140 //defines the max current that the EPOS2s can SET
+#define MAXCURRENTALLOWED 1200 /**< Detailed description after the member */
 
 namespace barrett{
 
 
 
 class EPOS2{
-	int CurrentDemand;
+	
 	const bus::CANSocket* bus; // Points to can socket that you are using and can only
 							   // be assigned when initializing. 
 protected: 
 	int node;
 public:
+    int currDemand;
+    int currSetCount, currSetError;
 	int A1, A2; //Analog read values 0-5000mv
 	int currPos;
 	int A1set, A2set; //Logs how many times the analog voltage has been set for each.
 	bool A1flag, A2flag; //Logs that each are being updated when requested.
-
+    bool isEnabled;
+    int staticFrictionF, staticFrictionE;
 	int nodeRec;
 	int nodeSet;
 	// Constructor. Minimal error checking be carefule and make sure you 
 	// know what you are doing!!
 	EPOS2(int nodeSetassign, const bus::CANSocket* busSet){
+        A1 = 0;
+        A2 = 0;
 		nodeSet = nodeSetassign;
 		node = 0x600 + nodeSet;
 		nodeRec = 0x580 + nodeSet;
 		bus = busSet;
-		CurrentDemand = 0;
+		currDemand = 0;
 		currPos = 0;
+        currSetCount = 0;
+        currSetError = 0;
+        staticFrictionF = 60;
+        staticFrictionE = 60;
+        isEnabled = false;
 	};
 
 	void enable();
+    int  getNode();
 	void readAnalog();
 	void readAnalog1();
 	void readAnalog2();
@@ -84,9 +97,13 @@ public:
 	void DisableState();
 	void ActivateProfilePositionMode();
 	void ActivateCurrentMode(int continuousCurrentLimit, int outputCurrentLimit, int MaxSpeed);
+    /** \returns the inner size.
+     * \note member function that sets motor current to desired (int)mA value.
+     * will not exceed MAXCURRENTALLOWED that is defined in EPOSInterface.h
+     */
 	void SetCurrent(int setCurrent);
 	void SetCurrentLimit(int setCurrentLimit);
-	int  CurrentDemanValue(){return CurrentDemand;}
+	int  CurrDemanValue(){return currDemand;}
 
 	void print(){
 		printf("A1 = %d,  A2 = %d, A1set = %d A2set = %d\n",\
@@ -97,6 +114,7 @@ public:
 
 
 
-
-
 }; //From namespace barrett{}
+
+
+#endif

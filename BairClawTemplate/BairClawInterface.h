@@ -30,6 +30,9 @@
 #include <barrett/log.h>
 #include <barrett/products/product_manager.h>
 
+#include "EPOSInterface.h"
+
+
 
 
 namespace barrett{
@@ -39,25 +42,27 @@ class BCDigit {
 	int setCounter;
 	int JointShutOffRange;
 public:
-	EPOS2 motor;
+	EPOS2 FEmotor, PIPmotor, ADABmotor;
+    int node;
 	bool isInit;
-	int AdAb, FE, PIP, DIP;
-	int AdAbmin, FEmin, PIPmin, DIPmin;
-	int AdAbmax, FEmax, PIPmax, DIPmax;
-	double AdAbPercent, FEPercent, PIPPercent, DIPPercent;
-	double AdAbRange, FERange, PIPRange, DIPRange;
+	int adab, fe, pip, dip;
+    int jointVal[4];
+    double jointPercent[4];
+	int ADABmin, FEmin, PIPmin, DIPmin;
+	int ADABmax, FEmax, PIPmax, DIPmax;
+	double ADABRange, FERange, PIPRange, DIPRange;
 	int normalRotation;                   //used to determine is flextion is pos mA. Set to neg(-) if flipped
-	int staticFrictionF, staticFrictionE; //used to set static friction for each joint during initilization.
+	 //used to set static friction for each joint during initilization.
     std::string name;                     //name assined to BCdigit as a descrpiter
     
 	// Constructor. Minimal error checking be carefule and make sure you
 	// know what you are doing!!
-	BCDigit(int node, const bus::CANSocket* busSet): motor( node, busSet)
+	BCDigit(int node, const bus::CANSocket* busSet): FEmotor( node, busSet), PIPmotor( node+1, busSet), ADABmotor( node+2, busSet), node(node)
 	{
-		AdAb = 0; AdAbmin = 18 ; AdAbmax = 1020;
-		FE   = 0; FEmin   = 392; FEmax   = 1021;
-		PIP  = 0; PIPmin  = 2  ; PIPmax  = 790;
-		DIP  = 0; DIPmin  = 611; DIPmax  = 832;
+		adab = 0; ADABmin = 18 ; ADABmax = 1020;
+		fe   = 0; FEmin   = 480; FEmax   = 1021;
+		pip  = 0; PIPmin  = 2  ; PIPmax  = 790;
+		dip  = 0; DIPmin  = 611; DIPmax  = 832;
 		setCounter = 0;
 		isInit = 0;
 		JointShutOffRange = 5;
@@ -66,10 +71,10 @@ public:
     
     
 	void set(unsigned char data[]){
-		AdAb = data[0] + (data[1] << 8);
-		FE   = data[2] + (data[3] << 8);
-		PIP  = data[4] + (data[5] << 8);
-		DIP  = data[6] + (data[7] << 8);
+		jointVal[0] = data[0] + (data[1] << 8);
+		jointVal[1] = data[2] + (data[3] << 8);
+		jointVal[2] = data[4] + (data[5] << 8);
+		jointVal[3] = data[6] + (data[7] << 8);
 	}
     
 	void init();
@@ -98,26 +103,25 @@ public:
 };
 
 
+//BCHand class pulls in BCDigit & EPOS
 class BCHand
 {
-    std::vector< BCDigit > BCDigits; //BCDigitPointer
-    std::string name;
 public:
-    void print();
-    
-    
-    
+    std::vector<BCDigit> digit; //BCDigitPointer
+    std::string name;
+
+    BCHand(int NumberOfDigits, const bus::CANSocket* busSet, int statingNode=1)
+    {
+        digit.push_back(BCDigit(1, busSet));
+    }
+    void print(); //Displays bairclaw data on screen at ~10Hz not to be called from a realtime thread! 
     
 };
     
+    
+    
+    
 }; //From namespace barrett{}
-
-
-
-
-
-
-
 
 
 

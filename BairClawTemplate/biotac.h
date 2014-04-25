@@ -6,12 +6,12 @@
 //=========================================================================
 // DEFAULT CONSTANTS
 //=========================================================================
-#define BT_SPI_BITRATE_KHZ_DEFAULT 						4400
+#define BT_SPI_BITRATE_KHZ_DEFAULT 						4400 //CHANGE - 8800 to double sampling rates
 #define	BT_AFTERSAMPLE_DELAY_DEFAULT 					50000 		/* Delay after sampling command */
 #define BT_INTERWORD_DELAY_DEFAULT						10000		/* Delay between words in communication */
-#define BT_SAMPLE_RATE_HZ_DEFAULT						4400
+#define BT_SAMPLE_RATE_HZ_DEFAULT						4400 //CHANGE - 8800 to double sampling rates
 #define BT_FRAMES_IN_BATCH_DEFAULT						5
-#define BT_BATCH_MS_DEFAULT								50
+#define BT_BATCH_MS_DEFAULT								50 //CHANGE  - 25 to double sampling rates
 #define BT_FRAME_STRUCTURE_DEFAULT  					{\
 														BT_E01_SAMPLING_COMMAND, BT_PAC_SAMPLING_COMMAND, BT_E02_SAMPLING_COMMAND, BT_PAC_SAMPLING_COMMAND, \
 														BT_E03_SAMPLING_COMMAND, BT_PAC_SAMPLING_COMMAND, BT_E04_SAMPLING_COMMAND, BT_PAC_SAMPLING_COMMAND, \
@@ -203,6 +203,23 @@ typedef struct
 	} batch;
 } bt_info;
 
+typedef struct
+{
+    int index;
+    double time;
+    double frame_index;
+    double batch_index;
+    struct{
+        int pac[22];
+        int elec[19];
+        int pdc;
+        int tac;
+        int tdc;
+        u08 bt_parity;
+    } bt[MAX_BIOTACS_PER_CHEETAH];
+    
+} bt_single_batch;
+
 
 //==================================================//
 // Print Data Definitions //
@@ -214,13 +231,22 @@ typedef struct
 //==================================================//
 // Function Prototypes //
 //==================================================//
+#ifdef __cplusplus
+extern "C" {
+#endif
 Cheetah 	bt_cheetah_initialize(const bt_info *biotac);
 BioTac 		bt_cheetah_get_properties(Cheetah ch_handle, int bt_select, bt_property *property);
 BioTac 		bt_cheetah_configure_batch(Cheetah ch_handle, bt_info *biotac, int num_samples);
 bt_data*	bt_configure_save_buffer(int num_samples);
 void 		bt_cheetah_collect_batch(Cheetah ch_handle, const bt_info *biotac, bt_data *data, BOOL print_flag);
+void 		bt_cheetah_collect_single_batch(Cheetah ch_handle, const bt_info *biotac, bt_single_batch *data, BOOL print_flag);
+void        bt_print_single_batch_data(bt_single_batch *data);
 void		bt_display_errors(BioTac bt_err_code);
 void 		bt_save_buffer_data(const char *file_name, const bt_data *data, int num_samples);
 void 		bt_cheetah_close(Cheetah ch_handle);
+    
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BIOTAC_H_ */

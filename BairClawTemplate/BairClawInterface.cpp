@@ -19,42 +19,42 @@ void BCInitThread( BCDigit* digit, const bool* initgoing) {
     
 	if(input == 'y')
 	{
-		digit->AdAbmin = digit->AdAb;
-		digit->FEmin   = digit->FE;
-		digit->DIPmin  = digit->DIP;
-		digit->PIPmin  = digit->PIP;
-		digit->AdAbmax = digit->AdAb;
-		digit->FEmax   = digit->FE;
-		digit->DIPmax  = digit->DIP;
-		digit->PIPmax  = digit->PIP;
-        
-		while (*initgoing) {
-			thrdCnt++;
-			// MIN
-			if( (digit->AdAb) < (digit->AdAbmin))   digit->AdAbmin = digit->AdAb;
-			if( (digit->FE)   < (digit->FEmin  ))   digit->FEmin = digit->FE;
-			if( (digit->DIP)  < (digit->DIPmin ))   digit->DIPmin = digit->DIP;
-			if( (digit->PIP)  < (digit->PIPmin ))   digit->PIPmin = digit->PIP;
-			// MAX
-			if( (digit->AdAb) > (digit->AdAbmax))   digit->AdAbmax = digit->AdAb;
-			if( (digit->FE)   > (digit->FEmax  ))   digit->FEmax = digit->FE;
-			if( (digit->DIP)  > (digit->DIPmax ))   digit->DIPmax = digit->DIP;
-			if( (digit->PIP)  > (digit->PIPmax ))   digit->PIPmax = digit->PIP;
-			//
-            
-			if(thrdCnt % 5 == 0)
-			{
-				system("clear");
-				printf("README: Cycle all joints until you have reached the \n        desired min and max for each joint.\n\n");
-				printf("        AdAb     FE    PIP     DIP\n");
-				printf("Current %d     %d     %d      %d \n", digit->AdAb   , digit->FE   , digit->PIP   , digit->DIP   );
-				printf(" min    %d     %d     %d      %d \n", digit->AdAbmin, digit->FEmin, digit->PIPmin, digit->DIPmin);
-				printf(" max    %d     %d     %d      %d \n", digit->AdAbmax, digit->FEmax, digit->PIPmax, digit->DIPmax);
-			}
-			usleep(5000);
-            
-		}
-		printf("exiting initThread\n");
+//		digit->AdAbmin = digit->AdAb;
+//		digit->FEmin   = digit->FE;
+//		digit->DIPmin  = digit->DIP;
+//		digit->PIPmin  = digit->PIP;
+//		digit->AdAbmax = digit->AdAb;
+//		digit->FEmax   = digit->FE;
+//		digit->DIPmax  = digit->DIP;
+//		digit->PIPmax  = digit->PIP;
+//        
+//		while (*initgoing) {
+//			thrdCnt++;
+//			// MIN
+//			if( (digit->AdAb) < (digit->AdAbmin))   digit->AdAbmin = digit->AdAb;
+//			if( (digit->FE)   < (digit->FEmin  ))   digit->FEmin = digit->FE;
+//			if( (digit->DIP)  < (digit->DIPmin ))   digit->DIPmin = digit->DIP;
+//			if( (digit->PIP)  < (digit->PIPmin ))   digit->PIPmin = digit->PIP;
+//			// MAX
+//			if( (digit->AdAb) > (digit->AdAbmax))   digit->AdAbmax = digit->AdAb;
+//			if( (digit->FE)   > (digit->FEmax  ))   digit->FEmax = digit->FE;
+//			if( (digit->DIP)  > (digit->DIPmax ))   digit->DIPmax = digit->DIP;
+//			if( (digit->PIP)  > (digit->PIPmax ))   digit->PIPmax = digit->PIP;
+//			//
+//            
+//			if(thrdCnt % 5 == 0)
+//			{
+//				system("clear");
+//				printf("README: Cycle all joints until you have reached the \n        desired min and max for each joint.\n\n");
+//				printf("        AdAb     FE    PIP     DIP\n");
+//				printf("Current %d     %d     %d      %d \n", digit->AdAb   , digit->FE   , digit->PIP   , digit->DIP   );
+//				printf(" min    %d     %d     %d      %d \n", digit->AdAbmin, digit->FEmin, digit->PIPmin, digit->DIPmin);
+//				printf(" max    %d     %d     %d      %d \n", digit->AdAbmax, digit->FEmax, digit->PIPmax, digit->DIPmax);
+//			}
+//			usleep(5000);
+//            
+//		}
+//		printf("exiting initThread\n");
 	}
 	else
 	{
@@ -119,17 +119,17 @@ void BairClawVisThread( BCDigit* digit, const bool* visgoing) {
 }
 
 void BCDigit::calcPercentage(){
-    /*
-     AdAbRange = (double)AdAbmax - (double)AdAbmin;
+    
+     ADABRange = (double)ADABmax - (double)ADABmin;
      FERange   = (double)FEmax   - (double)FEmin;
      PIPRange  = (double)PIPmax  - (double)PIPmin;
      DIPRange  = (double)DIPmax  - (double)DIPmin;
      
-     AdAbPercent = 100 - ( ((double)AdAbRange - ((double)AdAb - (double)AdAbmin)) / (double)AdAbRange ) *100;
-     FEPercent =    ( ((double)FERange   - ((double)FE   - (double)FEmin))   / (double)FERange )   *100;
-     PIPPercent =  100 - ( ((double)PIPRange  - ((double)PIP  - (double)PIPmin))  / (double)PIPRange )  *100;
-     DIPPercent =   ( ((double)DIPRange  - ((double)DIP  - (double)DIPmin))  / (double)DIPRange )  *100;
-     */
+     jointPercent[0] = 100 - ( ((double)ADABRange - ((double)jointVal[0] - (double)ADABmin)) / (double)ADABRange ) *100;
+     jointPercent[1] =    ( ((double)FERange   - ((double)jointVal[1]   - (double)FEmin))   / (double)FERange )   *100;
+     jointPercent[2] =  100 - ( ((double)PIPRange  - ((double)jointVal[2]  - (double)PIPmin))  / (double)PIPRange )  *100;
+     jointPercent[3] =   ( ((double)DIPRange  - ((double)jointVal[3]  - (double)DIPmin))  / (double)DIPRange )  *100;
+     
 }
 
 void BCDigit::vis(){
@@ -150,44 +150,46 @@ void BCDigit::vis(){
      */
 }
 void BCDigit::setStaticFriction(){
-	/*
-     system("clear");
-     
-     printf("Starting static friciton calibration on FE node = %d\n",motorFE.nodeSet);
-     int initFE = FE;
-     int staticCurrent = 0;
-     
-     while(abs(initFE - FE) < 10 )
-     {
-     staticCurrent = staticCurrent + 1;
-     motor.SetCurrent(staticCurrent);
-     if(staticCurrent % 5 == 0 )
-     printf("initFe = %d, FE = %d, Current = %d\n", initFE, FE, staticCurrent);
-     usleep(20000);
-     }
-     if(FE < initFE)
-     normalRotation = -1;
-     motor.SetCurrent(0);
-     printf("Static current = %d\n",staticCurrent);
-     usleep(500000);
-     staticFrictionF = staticCurrent;
-     staticCurrent = 0;
-     initFE = FE;
-     while(abs(initFE - FE) < 10 )
-     {
-     staticCurrent = staticCurrent - 1;
-     motorFE.SetCurrent(staticCurrent);
-     if(staticCurrent % 5 == 0 )
-     printf("initFe = %d, FE = %d, Current = %d\n", initFE, FE, staticCurrent);
-     usleep(20000);
-     }
-     staticFrictionE = staticCurrent;
-     motor.SetCurrent(0);
-     printf("Static current = %d\n",staticCurrent);
-     
-     //printf("Starting static friciton calibration on AdAb node = %d\n",motorAdAb.nodeSet);
-     //printf("Starting static friciton calibration on PIPDIP node = %d\n",motorPIPDIP.nodeSet);
-     */
+	
+    printf("In setStaticFriction() enabled - %s \n",FEmotor.isEnabled ? "true":"false");
+    //SET MCP F/E static values
+    int initFE = jointVal[1];
+    int demandCurrent = 40;
+    if(FEmotor.isEnabled)
+    {
+        printf("Setting Flexion");
+        while( abs(initFE - jointVal[1]) < 3 && demandCurrent <= 100)
+        {
+            printf("delta - %d demandCurrent - %d\n",abs(initFE - jointVal[1]), demandCurrent);
+            FEmotor.SetCurrent(-demandCurrent++);
+            btsleep(0.2);
+        }
+        FEmotor.SetCurrent(0);
+        FEmotor.staticFrictionF = abs(demandCurrent);
+    }else
+    {
+        printf("Can not set static friction. Motor must first be enabled");
+    }
+    
+    demandCurrent = 40;
+    FEmotor.SetCurrent(demandCurrent++);
+    btsleep(0.5);
+    
+    if(FEmotor.isEnabled)
+    {
+        int initFE = jointVal[1];
+        printf("Setting Extenstion \n");
+        while( abs(initFE - jointVal[1]) < 3 && demandCurrent <= 100)
+        {
+            printf("delta - %d demandCurrent - %d\n",abs(initFE - jointVal[1]), demandCurrent);
+            FEmotor.SetCurrent(demandCurrent++);
+            btsleep(0.2);
+        }
+        FEmotor.SetCurrent(0);
+        FEmotor.staticFrictionE = abs(demandCurrent);
+    }
+    
+
 }
 
 void BCDigit::backDrive(){
@@ -230,5 +232,30 @@ void BCDigit::backDrive(){
      }*/
     
 }
+void BCHand::print(){
+    
+  //- NICE DISPLAY -----------------------------------------
 
+    for(int i=0; i < digit.size(); i++)
+    {
+        digit[i].calcPercentage();
+        system("clear");
+        printf("digit[%d]\n - Joint Percentace - ", i);
+        for(int j=0; j<4; j++)
+        {
+            printf("[%d]p-%4.2f v-%d ",j, digit[i].jointPercent[j], digit[i].jointVal[j]);
+        }
+        printf("(%d)\n",i);
+        printf("FE-[ %d, %d] PIP [ %d, %d] \n", digit[i].FEmotor.A1,
+                                                digit[i].FEmotor.A2,
+                                                digit[i].PIPmotor.A1,
+                                                digit[i].PIPmotor.A2);
+    }
+    usleep(100000);
+    
+}
+    
+    
+    
+    
 } //From namespace barrett{}

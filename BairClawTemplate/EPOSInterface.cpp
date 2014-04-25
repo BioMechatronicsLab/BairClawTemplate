@@ -8,11 +8,57 @@
 
 
 #include "EPOSInterface.h"
-/*  Actual definition in Header file
-#define MAXCURRENTALLOWED 140 //defines the max current that the EPOS2s can SET
-*/
+
+
+
+
+
 namespace barrett {
+
+void EPOS2::enable(){
+    unsigned char data[8];
+    int len =8;
     
+    data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
+    data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    data[0] = 0X22; data[1] = 0X40; data[2] = 0X60; data[3] = 00;
+    data[4] = 0X06; data[5] = 0; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
+    data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    data[0] = 0X22; data[1] = 0X40; data[2] = 0X60; data[3] = 00;
+    data[4] = 0X0f; data[5] = 0; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
+    data[4] = 0X0f; data[5] = 0; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
+    data[4] = 0X0f; data[5] = 0; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    data[0] = 0X22; data[1] = 0X40; data[2] = 0X60; data[3] = 00;
+    data[4] = 0X0f; data[5] = 0X01; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
+    data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
+    bus->send(node, data, len);
+    usleep(1000);
+    isEnabled = true;
+    
+    return;
+}
+
+int EPOS2::getNode(){
+    return node;
+}
 void EPOS2::reset(){
 	unsigned char data[2];
 	int len =2;
@@ -41,49 +87,13 @@ void EPOS2::resetAll(){
 	bus->send(0x000, data, len);usleep(1000);
 	bus->send(0x000, data, len);
 }
-void EPOS2::enable(){
-	unsigned char data[8];
-	int len =8;
-    
-	data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
-	data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-	data[0] = 0X22; data[1] = 0X40; data[2] = 0X60; data[3] = 00;
-	data[4] = 0X06; data[5] = 0; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-	data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
-	data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-	data[0] = 0X22; data[1] = 0X40; data[2] = 0X60; data[3] = 00;
-	data[4] = 0X0f; data[5] = 0; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-	data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
-	data[4] = 0X0f; data[5] = 0; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-	data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
-	data[4] = 0X0f; data[5] = 0; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-	data[0] = 0X22; data[1] = 0X40; data[2] = 0X60; data[3] = 00;
-	data[4] = 0X0f; data[5] = 0X01; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-	data[0] = 0X40; data[1] = 0X41; data[2] = 0X60; data[3] = 00;
-	data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
-	bus->send(node, data, len);
-    usleep(1000);
-    
-	return;
-}
+
 
 void EPOS2::readAnalog(){
+    
 	readAnalog1();
-	readAnalog2();
+    readAnalog2();
+
 }
 void EPOS2::readAnalog1(){
 	unsigned char data[8];
@@ -91,7 +101,6 @@ void EPOS2::readAnalog1(){
 	data[0] = 0X40; data[1] = 0X7c; data[2] = 0X20; data[3] = 0x01;
 	data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
 	bus->send(node, data, len);
-	usleep(500);
 	A1flag = 0;
     
 }
@@ -101,7 +110,6 @@ void EPOS2::readAnalog2(){
 	data[0] = 0X40; data[1] = 0X7c; data[2] = 0X20; data[3] = 0x02;
 	data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
 	bus->send(node, data, len);
-	usleep(500);
 	A2flag = 0;
 }
 
@@ -269,8 +277,8 @@ void EPOS2::ActivateProfilePositionMode(){
 void EPOS2::ActivateCurrentMode(int continuousCurrentLimit=5000, int outputCurrentLimit = 1000, int MaxSpeed = 25000){
 	unsigned char data[bus::CANSocket::MAX_MESSAGE_LEN];
 	int len =8;
-	printf("Sent CurrentValues continuousCurrentLimit = %d, outputCurrentLimit = %d, MaxSpeed = %d\n",continuousCurrentLimit, outputCurrentLimit, MaxSpeed);
-	data[0] = 0X22;
+
+    data[0] = 0X22;
 	data[1] = 0X60;
 	data[2] = 0X60;
 	data[3] = 0X00;
@@ -279,7 +287,7 @@ void EPOS2::ActivateCurrentMode(int continuousCurrentLimit=5000, int outputCurre
 	data[6] = 0;
 	data[7] = 0;
 	bus->send(node, data, len);btsleep(0.01);
-    
+    btsleep(0.01);
 	data[0] = 0X22;
 	data[1] = 0X10;
 	data[2] = 0X64;
@@ -289,16 +297,8 @@ void EPOS2::ActivateCurrentMode(int continuousCurrentLimit=5000, int outputCurre
 	data[6] = 0;
 	data[7] = 0;
 	bus->send(node, data, len);btsleep(0.01);
-    
-	data[0] = 0X22;
-	data[1] = 0X10;
-	data[2] = 0X64;
-	data[3] = 0X02;
-	data[4] = outputCurrentLimit;
-	data[5] = outputCurrentLimit >> 8;
-	data[6] = 0;
-	data[7] = 0;
-	bus->send(node, data, len);btsleep(0.01);
+    btsleep(0.01);
+	
     
 	data[0] = 0X22;
 	data[1] = 0X10;
@@ -309,6 +309,21 @@ void EPOS2::ActivateCurrentMode(int continuousCurrentLimit=5000, int outputCurre
 	data[6] = 0;
 	data[7] = 0;
 	bus->send(node, data, len);btsleep(0.01);
+    btsleep(0.01);
+    
+    data[0] = 0X22;
+	data[1] = 0X10;
+	data[2] = 0X64;
+	data[3] = 0X02;
+	data[4] = outputCurrentLimit;
+	data[5] = outputCurrentLimit >> 8;
+	data[6] = 0;
+	data[7] = 0;
+	bus->send(node, data, len);btsleep(0.01);
+    btsleep(0.01);
+    
+    
+
     
 	return;
 }
@@ -327,13 +342,21 @@ void EPOS2::SetCurrentLimit(int setCurrentLimit){
 	bus->send(node, data, len);btsleep(0.01);
     
 }
+    
+
 void EPOS2::SetCurrent(int setCurrent){
 	unsigned char data[bus::CANSocket::MAX_MESSAGE_LEN];
 	int len =8;
-	if(setCurrent > MAXCURRENTALLOWED)
-		setCurrent = MAXCURRENTALLOWED;
     
-	CurrentDemand = setCurrent;
+	if(setCurrent > MAXCURRENTALLOWED)
+    {
+		setCurrent = MAXCURRENTALLOWED;
+    }else if(setCurrent < -MAXCURRENTALLOWED)
+    {
+        setCurrent = -MAXCURRENTALLOWED;
+    }
+        
+	currDemand = setCurrent;
 	data[0] = 0X22;
 	data[1] = 0X30;
 	data[2] = 0X20;
@@ -342,7 +365,8 @@ void EPOS2::SetCurrent(int setCurrent){
 	data[5] = setCurrent >> 8;
 	data[6] = 0;
 	data[7] = 0;
-	bus->send(node, data, len);usleep(1000);
+	bus->send(node, data, len);
+
 }
 
 void EPOS2::DisableState(){

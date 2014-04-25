@@ -7,12 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */; };
 		871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B502B18231DF50000C597 /* BairClawMain.cpp */; };
-		871B502E18231DF50000C597 /* BairClawTemplate.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 871B502D18231DF50000C597 /* BairClawTemplate.1 */; };
 		871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B503418231E3F0000C597 /* BairClawInterface.cpp */; };
 		871B503918231E3F0000C597 /* EPOSInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B503618231E3F0000C597 /* EPOSInterface.cpp */; };
-		87B695461824055B002FD276 /* biotac.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B695421824055B002FD276 /* biotac.c */; };
-		87B695471824055B002FD276 /* cheetah.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B695441824055B002FD276 /* cheetah.c */; };
+		87B6959118281D11002FD276 /* example.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959018281D11002FD276 /* example.c */; };
+		87B695931828319A002FD276 /* log_sg_data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87B695921828319A002FD276 /* log_sg_data.cpp */; };
+		87B6959818286CAC002FD276 /* biotac.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959418286CAC002FD276 /* biotac.c */; };
+		87B6959918286CAC002FD276 /* cheetah.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959618286CAC002FD276 /* cheetah.c */; };
+		87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87E511381832CF8B00DBC8C7 /* BairClawMain-old.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -22,24 +25,29 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
-				871B502E18231DF50000C597 /* BairClawTemplate.1 in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MotorModCalibration.cpp; sourceTree = "<group>"; };
 		871B502818231DF50000C597 /* BairClawTemplate */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = BairClawTemplate; sourceTree = BUILT_PRODUCTS_DIR; };
 		871B502B18231DF50000C597 /* BairClawMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BairClawMain.cpp; sourceTree = "<group>"; };
-		871B502D18231DF50000C597 /* BairClawTemplate.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = BairClawTemplate.1; sourceTree = "<group>"; };
 		871B503418231E3F0000C597 /* BairClawInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BairClawInterface.cpp; sourceTree = "<group>"; };
 		871B503518231E3F0000C597 /* BairClawInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BairClawInterface.h; sourceTree = "<group>"; };
 		871B503618231E3F0000C597 /* EPOSInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EPOSInterface.cpp; sourceTree = "<group>"; };
 		871B503718231E3F0000C597 /* EPOSInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EPOSInterface.h; sourceTree = "<group>"; };
-		87B695421824055B002FD276 /* biotac.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = biotac.c; sourceTree = "<group>"; };
-		87B695431824055B002FD276 /* biotac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = biotac.h; sourceTree = "<group>"; };
-		87B695441824055B002FD276 /* cheetah.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cheetah.c; sourceTree = "<group>"; };
-		87B695451824055B002FD276 /* cheetah.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cheetah.h; sourceTree = "<group>"; };
+		8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawDataPlayBack.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		87B6958F18281D11002FD276 /* BairClawTemplate.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; name = BairClawTemplate.1; path = Resources/BairClawTemplate.1; sourceTree = "<group>"; };
+		87B6959018281D11002FD276 /* example.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = example.c; path = Resources/example.c; sourceTree = "<group>"; };
+		87B695921828319A002FD276 /* log_sg_data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = log_sg_data.cpp; path = Resources/log_sg_data.cpp; sourceTree = "<group>"; };
+		87B6959418286CAC002FD276 /* biotac.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = biotac.c; sourceTree = "<group>"; };
+		87B6959518286CAC002FD276 /* biotac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = biotac.h; sourceTree = "<group>"; };
+		87B6959618286CAC002FD276 /* cheetah.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cheetah.c; sourceTree = "<group>"; };
+		87B6959718286CAC002FD276 /* cheetah.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cheetah.h; sourceTree = "<group>"; };
+		87E4433A184E5EFC00BDD2AD /* codeSnidbits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = codeSnidbits.h; sourceTree = "<group>"; };
+		87E511381832CF8B00DBC8C7 /* BairClawMain-old.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "BairClawMain-old.cpp"; path = "Resources/BairClawMain-old.cpp"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,18 +80,32 @@
 		871B502A18231DF50000C597 /* BairClawTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				871B502B18231DF50000C597 /* BairClawMain.cpp */,
+				8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */,
+				87E4433A184E5EFC00BDD2AD /* codeSnidbits.h */,
+				87B6959418286CAC002FD276 /* biotac.c */,
+				87B6959518286CAC002FD276 /* biotac.h */,
+				87B6959618286CAC002FD276 /* cheetah.c */,
+				87B6959718286CAC002FD276 /* cheetah.h */,
 				871B503518231E3F0000C597 /* BairClawInterface.h */,
 				871B503418231E3F0000C597 /* BairClawInterface.cpp */,
 				871B503718231E3F0000C597 /* EPOSInterface.h */,
 				871B503618231E3F0000C597 /* EPOSInterface.cpp */,
-				871B502B18231DF50000C597 /* BairClawMain.cpp */,
-				87B695431824055B002FD276 /* biotac.h */,
-				87B695421824055B002FD276 /* biotac.c */,
-				87B695451824055B002FD276 /* cheetah.h */,
-				87B695441824055B002FD276 /* cheetah.c */,
-				871B502D18231DF50000C597 /* BairClawTemplate.1 */,
+				8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */,
+				87B6958E18281C93002FD276 /* Resources */,
 			);
 			path = BairClawTemplate;
+			sourceTree = "<group>";
+		};
+		87B6958E18281C93002FD276 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				87E511381832CF8B00DBC8C7 /* BairClawMain-old.cpp */,
+				87B6958F18281D11002FD276 /* BairClawTemplate.1 */,
+				87B6959018281D11002FD276 /* example.c */,
+				87B695921828319A002FD276 /* log_sg_data.cpp */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,11 +159,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				87B695471824055B002FD276 /* cheetah.c in Sources */,
 				871B503918231E3F0000C597 /* EPOSInterface.cpp in Sources */,
+				87B695931828319A002FD276 /* log_sg_data.cpp in Sources */,
 				871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */,
+				87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */,
+				87B6959918286CAC002FD276 /* cheetah.c in Sources */,
+				8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */,
+				87B6959818286CAC002FD276 /* biotac.c in Sources */,
 				871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */,
-				87B695461824055B002FD276 /* biotac.c in Sources */,
+				87B6959118281D11002FD276 /* example.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

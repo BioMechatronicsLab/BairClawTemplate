@@ -456,21 +456,21 @@ void bt_cheetah_collect_batch(Cheetah ch_handle, const bt_info *biotac, bt_data 
 	int spi_data_len;
 	int number_of_samples_in_batch;
 	u08 *bt_raw_data;
-
+    
 	spi_data_len = ch_spi_batch_length(ch_handle);
 	bt_raw_data = malloc(spi_data_len * sizeof *bt_raw_data);
 	ch_spi_async_collect(ch_handle, spi_data_len, bt_raw_data);
 	ch_spi_async_submit(ch_handle);
-
+    
 	number_of_samples_in_batch = spi_data_len/byte_shift;
-
+    
 	/**** Time stamps from a computer (by default, it's disabled) ****/
 #ifdef MACHINE_TIMER
 #if defined (__linux__) || defined (__APPLE__)
 	gettimeofday(&tv, NULL);
 	curtime_sec = tv.tv_sec;
 	curtime_usec = tv.tv_usec;
-
+    
 	time_of_frame_end = curtime_sec + (double)curtime_usec/1000000;
 	time_step = (time_of_frame_end - time_of_frame_start) / number_of_samples_in_batch;
 	time_of_frame_start = time_of_frame_end;
@@ -480,7 +480,7 @@ void bt_cheetah_collect_batch(Cheetah ch_handle, const bt_info *biotac, bt_data 
 	time_of_frame_start = time_of_frame_end;
 #endif
 #endif /* MACHINE_TIMER */
-
+    number_of_samples_in_batch  = 44;
 	for(i = 0; i < number_of_samples_in_batch; i++)
 	{
 		if(count != 0)
@@ -514,15 +514,15 @@ void bt_cheetah_collect_batch(Cheetah ch_handle, const bt_info *biotac, bt_data 
 			data[count].frame_index = 1;
 			data[count].time = 0;
 		}
-
+        
 		data[count].channel_id = (biotac->frame.frame_structure[i%(biotac->frame.frame_size)] & 0x7E) >> 1;
-
+        
 		for(j = 0; j < MAX_BIOTACS_PER_CHEETAH; j++)
 		{
 			data[count].d[j].word = (bt_raw_data[i*byte_shift + j*2 + 2] >> 1) * 32 + (bt_raw_data[i*byte_shift + j*2 + 3] >> 3);
-
+            
 			if((parity_values[bt_raw_data[i*byte_shift + j*2 + 2] >> 1] == bt_raw_data[i*byte_shift + j*2 + 2]) && \
-					(parity_values[bt_raw_data[i*byte_shift + j*2 + 3] >> 1] == bt_raw_data[i*byte_shift + j*2 + 3]))
+               (parity_values[bt_raw_data[i*byte_shift + j*2 + 3] >> 1] == bt_raw_data[i*byte_shift + j*2 + 3]))
 			{
 				data[count].bt_parity[j] = PARITY_GOOD;
 			}
@@ -531,7 +531,7 @@ void bt_cheetah_collect_batch(Cheetah ch_handle, const bt_info *biotac, bt_data 
 				data[count].bt_parity[j] = PARITY_BAD;
 			}
 		}
-
+        
 		// Print data on Terminal
 		if(print_flag)
 		{
@@ -552,6 +552,137 @@ void bt_cheetah_collect_batch(Cheetah ch_handle, const bt_info *biotac, bt_data 
 		count++;
 	}
 	free(bt_raw_data);
+}
+//=========================================================================
+// COLLECT SINGLE BATCH
+//=========================================================================
+void bt_cheetah_collect_single_batch(Cheetah ch_handle, const bt_info *biotac, bt_single_batch *data, BOOL print_flag)
+{
+	int i, j;
+ 	int byte_shift = 2 + (MAX_BIOTACS_PER_CHEETAH * 2);			// 2 bytes of command + 2 bytes per BioTac data
+	int spi_data_len;
+	int number_of_samples_in_batch;
+	u08 *bt_raw_data;
+	spi_data_len = ch_spi_batch_length(ch_handle);
+	bt_raw_data = malloc(spi_data_len * sizeof *bt_raw_data);
+    ch_spi_async_collect(ch_handle, spi_data_len, bt_raw_data);
+    ch_spi_async_submit(ch_handle);
+	number_of_samples_in_batch = spi_data_len/byte_shift;
+    
+	/**** Time stamps from a computer (by default, it's disabled) ****/
+#ifdef MACHINE_TIMER
+#if defined (__linux__) || defined (__APPLE__)
+	gettimeofday(&tv, NULL);
+	curtime_sec = tv.tv_sec;
+	curtime_usec = tv.tv_usec;
+    
+	time_of_frame_end = curtime_sec + (double)curtime_usec/1000000;
+	time_step = (time_of_frame_end - time_of_frame_start) / number_of_samples_in_batch;
+	time_of_frame_start = time_of_frame_end;
+#elif defined (_WIN32)
+	QueryPerformanceCounter(&time_of_frame_end);
+	time_step = ((time_of_frame_end.QuadPart - time_of_frame_start.QuadPart) / (double)frequency.QuadPart) / number_of_samples_in_batch;
+	time_of_frame_start = time_of_frame_end;
+#endif
+#endif /* MACHINE_TIMER */
+    int pacCount = 0;
+
+	for(i = 0; i < number_of_samples_in_batch; i++)
+	{
+        u08 channel_id = (biotac->frame.frame_structure[i%(biotac->frame.frame_size)] & 0x7E) >> 1;
+        if(channel_id == 0)
+        {
+        for(j = 0; j < MAX_BIOTACS_PER_CHEETAH; j++)
+            {
+                data->bt[j].pac[pacCount%22] = (bt_raw_data[i*byte_shift + j*2 + 2] >> 1) * 32 + (bt_raw_data[i*byte_shift + j*2 + 3] >> 3);
+            }
+            pacCount++;
+        }else if(channel_id == 1)
+        {
+            for(j = 0; j < MAX_BIOTACS_PER_CHEETAH; j++)
+            {
+                data->bt[j].pdc = (bt_raw_data[i*byte_shift + j*2 + 2] >> 1) * 32 + (bt_raw_data[i*byte_shift + j*2 + 3] >> 3);
+            }
+        }else if(channel_id == 2)
+        {
+            for(j = 0; j < MAX_BIOTACS_PER_CHEETAH; j++)
+            {
+                data->bt[j].tac = (bt_raw_data[i*byte_shift + j*2 + 2] >> 1) * 32 + (bt_raw_data[i*byte_shift + j*2 + 3] >> 3);
+            }
+        }else if(channel_id == 3)
+        {
+            for(j = 0; j < MAX_BIOTACS_PER_CHEETAH; j++)
+            {
+                data->bt[j].tdc = (bt_raw_data[i*byte_shift + j*2 + 2] >> 1) * 32 + (bt_raw_data[i*byte_shift + j*2 + 3] >> 3);
+            }
+        }else if(channel_id >16)
+        {
+            for(j = 0; j < MAX_BIOTACS_PER_CHEETAH; j++)
+            {
+                data->bt[j].elec[channel_id-17] = (bt_raw_data[i*byte_shift + j*2 + 2] >> 1) * 32 + (bt_raw_data[i*byte_shift + j*2 + 3] >> 3);
+
+            }
+        }
+
+        
+		// Print data on Terminal
+//        
+//		if(print_flag)
+//		{
+//			printf("%8d,  ", count);
+//			/**** Time stamps from a computer (by default, it only displays NULL) ****/
+//#ifdef DEFAULT_TIMER
+//			printf("%s, ", "NULL");
+//#elif defined MACHINE_TIMER
+//			printf("%3.6f, ", data[count].time);
+//#endif
+//			printf("%6.0f, %6.0f,  %s ", data[count].batch_index, data[count].frame_index, command_name[data[count].channel_id]);
+//			for(j = 0; j < MAX_BIOTACS_PER_CHEETAH; j++)
+//			{
+//				printf("%6d, %d; ", data[count].d[j].word, data[count].bt_parity[j]);
+//			}
+//			printf("\n");
+//		}
+		count++;
+	}
+	free(bt_raw_data);
+}
+
+//=========================================================================
+// PRINT SINGLE BATCH DATA TO TERMINAL
+//=========================================================================
+void bt_print_single_batch_data(bt_single_batch *data)
+{
+    int i=0;
+    int elec=0;
+    printf("Single Batch of bio tac data\n");
+    for(i=0; i<MAX_BIOTACS_PER_CHEETAH; i++)
+    {
+        printf("BIOTAC - %d\n\n",i+1);
+        printf("\tPDC - %d\n",data->bt[i].pdc);
+        printf("\tTDC - %d\n",data->bt[i].tdc);
+        printf("\tTAC - %d\n",data->bt[i].tac);
+        printf("\tElc - [");
+        for(elec=0; elec <  19; elec++)
+        {
+            if(elec != 18){
+                printf("%d-%d, ",elec+1, data->bt[i].elec[elec]);
+            }else{
+                printf("%d-%d] \n ",elec+1, data->bt[i].elec[elec]);
+            }
+        }
+        printf("\tPAC - [");
+        for(elec=0; elec <  22; elec++)
+        {
+            if(elec != 21){
+                printf("%d, ", data->bt[i].pac[elec]);
+            }else{
+                printf("%d]\n", data->bt[i].elec[elec]);
+            }
+        }
+        
+    }
+    
 }
 
 
