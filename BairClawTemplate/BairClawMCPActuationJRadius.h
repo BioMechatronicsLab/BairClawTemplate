@@ -1,6 +1,7 @@
 //
 //  BairClawMCPActuationJRadius.h
-//  mapTest
+//  Contains all the moment arms for flextion and extension given
+//  joint angles in degs.
 //
 //  Created by Randy Hellman on 5/21/14.
 //  Copyright (c) 2014 Randy Hellman. All rights reserved.
