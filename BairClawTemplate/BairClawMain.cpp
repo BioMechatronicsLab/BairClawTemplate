@@ -62,7 +62,7 @@
 
 #define DEBUG true
 #define POSITIONCONTROL false
-
+#define biotacOff true
 
 
 using namespace barrett;
@@ -163,8 +163,6 @@ protected:
 	// the "protected" access specifier.
 	virtual void operate() {
 		jointActual = input.getValue();  // Pull data from the input
-        
-        
         
         
         static int count = 0;
@@ -418,128 +416,130 @@ void biotacRecordThread(void *arg){
 	int number_of_samples;
 	int number_of_loops;
     
-    /**************************************************************************/
-	/* --- Initialize BioTac settings (only default values are supported) --- */
-    /**************************************************************************/
-    biotac.spi_clock_speed = BT_SPI_BITRATE_KHZ_DEFAULT;
-	biotac.number_of_biotacs = 0;
-	biotac.sample_rate_Hz = BT_SAMPLE_RATE_HZ_DEFAULT;
-	biotac.frame.frame_type = 0;
-	biotac.batch.batch_frame_count = 1; //BT_FRAMES_IN_BATCH_DEFAULT;
-	biotac.batch.batch_ms = 10; //BT_BATCH_MS_DEFAULT;
-    //had to change to get single batch of BioTac data (44 samples at 100Hz)
-
-    
-	// Set the duration of the run time
-	length_of_data_in_second = 0.01;
-	number_of_samples = (int)(BT_SAMPLE_RATE_HZ_DEFAULT * length_of_data_in_second);
-    std::cout << " number_of_samples - " << number_of_samples << std::endl;
-    
-	// Check if any initial settings are wrong
-	if (MAX_BIOTACS_PER_CHEETAH != 3 && MAX_BIOTACS_PER_CHEETAH != 5)
-	{
-		bt_err_code = BT_WRONG_MAX_BIOTAC_NUMBER;
-		bt_display_errors(bt_err_code);
-		exit(1);
-	}
-    /******************************************/
-	/* --- Initialize the Cheetah devices --- */
-    /******************************************/
-    ch_handle = bt_cheetah_initialize(&biotac);
-	
-    /*********************************************************/
-	/* --- Get and print out properties of the BioTac(s) --- */
-	/*********************************************************/
-	
-    for (i = 0; i < MAX_BIOTACS_PER_CHEETAH; i++)
-	{
-		bt_err_code = bt_cheetah_get_properties(ch_handle, i+1, &(biotac_property[i]));
-        
-		if (biotac_property[i].bt_connected == YES)
-		{
-			(biotac.number_of_biotacs)++;
-		}
-        
-		if (bt_err_code)
-		{
-			bt_display_errors(bt_err_code);
-			exit(1);
-		}
-	}
-    
-	// Check if any BioTacs are detected
-	if (biotac.number_of_biotacs == 0)
-	{
-		bt_err_code = BT_NO_BIOTAC_DETECTED;
-		bt_display_errors(bt_err_code);
-	}
-	else
-	{
-		printf("\n%d BioTac(s) detected.\n\n", biotac.number_of_biotacs);
-	}
-
-    
-	/*******************************/
-	/* --- Configure the batch --- */
-	/*******************************/
-    bt_err_code = bt_cheetah_configure_batch(ch_handle, &biotac, number_of_samples);
-	if (bt_err_code < 0)
-	{
-		bt_display_errors(bt_err_code);
-		exit(1);
-	}
-	else
-	{
-		printf("\nConfigured the batch\n");
-	}
-    
-    printf("about to collect \n");
-    number_of_loops = (int)(number_of_samples / ((double)(biotac.frame.frame_size * biotac.batch.batch_frame_count)));
-	printf("Start collecting BioTac data for %4.0f seconds(s)\n\tnumber_of_loops - %d \n", length_of_data_in_second,number_of_loops);
-	
-    printf("Press [Enter] to continue ...");
-	fflush(stdout);
-	getchar();
-    
-    biotacInit = true; //Flag to tell main that biotac is init.
-    
-
-    rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_biotac));
-    while(!shouldStart)
+    if(!biotacOff)
     {
-        rt_task_wait_period(NULL);
-    }
-    RTIME now, previous;
-    
-    
-    
-    
-    previous = rt_timer_read();
-    while (going)
-    {
-        rt_task_wait_period(NULL);
-    
-        bt_cheetah_collect_single_batch(ch_handle, &biotac, &data, NO);
+        /**************************************************************************/
+        /* --- Initialize BioTac settings (only default values are supported) --- */
+        /**************************************************************************/
+        biotac.spi_clock_speed = BT_SPI_BITRATE_KHZ_DEFAULT;
+        biotac.number_of_biotacs = 0;
+        biotac.sample_rate_Hz = BT_SAMPLE_RATE_HZ_DEFAULT;
+        biotac.frame.frame_type = 0;
+        biotac.batch.batch_frame_count = 1; //BT_FRAMES_IN_BATCH_DEFAULT;
+        biotac.batch.batch_ms = 10; //BT_BATCH_MS_DEFAULT;
+        //had to change to get single batch of BioTac data (44 samples at 100Hz)
+
         
-        btInput[0] = x++; //Counter to ensure fresh batch of data
-        btInput[1] = data.bt[0].pdc;
-        btInput[2] = data.bt[0].tac;
-        btInput[3] = data.bt[0].tdc;
+        // Set the duration of the run time
+        length_of_data_in_second = 0.01;
+        number_of_samples = (int)(BT_SAMPLE_RATE_HZ_DEFAULT * length_of_data_in_second);
+        std::cout << " number_of_samples - " << number_of_samples << std::endl;
         
-        for(i=0; i<19; i++) //Set electrode values into logget
+        // Check if any initial settings are wrong
+        if (MAX_BIOTACS_PER_CHEETAH != 3 && MAX_BIOTACS_PER_CHEETAH != 5)
         {
-            btInput[i+4]= data.bt[0].elec[i];
+            bt_err_code = BT_WRONG_MAX_BIOTAC_NUMBER;
+            bt_display_errors(bt_err_code);
+            exit(1);
+        }
+        /******************************************/
+        /* --- Initialize the Cheetah devices --- */
+        /******************************************/
+        ch_handle = bt_cheetah_initialize(&biotac);
+        
+        /*********************************************************/
+        /* --- Get and print out properties of the BioTac(s) --- */
+        /*********************************************************/
+        
+        for (i = 0; i < MAX_BIOTACS_PER_CHEETAH; i++)
+        {
+            bt_err_code = bt_cheetah_get_properties(ch_handle, i+1, &(biotac_property[i]));
+            
+            if (biotac_property[i].bt_connected == YES)
+            {
+                (biotac.number_of_biotacs)++;
+            }
+            
+            if (bt_err_code)
+            {
+                bt_display_errors(bt_err_code);
+                exit(1);
+            }
         }
         
-        for(i=0; i<22; i++) //Set pac into a singe row to be pulled out
+        // Check if any BioTacs are detected
+        if (biotac.number_of_biotacs == 0)
         {
-            btInput[i+23] = data.bt[0].pac[i];
+            bt_err_code = BT_NO_BIOTAC_DETECTED;
+            bt_display_errors(bt_err_code);
+        }
+        else
+        {
+            printf("\n%d BioTac(s) detected.\n\n", biotac.number_of_biotacs);
+        }
+
+        
+        /*******************************/
+        /* --- Configure the batch --- */
+        /*******************************/
+        bt_err_code = bt_cheetah_configure_batch(ch_handle, &biotac, number_of_samples);
+        if (bt_err_code < 0)
+        {
+            bt_display_errors(bt_err_code);
+            exit(1);
+        }
+        else
+        {
+            printf("\nConfigured the batch\n");
         }
         
-        btEoSys.setValue(btInput);
+        printf("about to collect \n");
+        number_of_loops = (int)(number_of_samples / ((double)(biotac.frame.frame_size * biotac.batch.batch_frame_count)));
+        printf("Start collecting BioTac data for %4.0f seconds(s)\n\tnumber_of_loops - %d \n", length_of_data_in_second,number_of_loops);
+        
+        printf("Press [Enter] to continue ...");
+        fflush(stdout);
+        getchar();
+        
+        biotacInit = true; //Flag to tell main that biotac is init.
+        
+
+        rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_biotac));
+        while(!shouldStart)
+        {
+            rt_task_wait_period(NULL);
+        }
+        RTIME now, previous;
+        
+        
+        
+        
+        previous = rt_timer_read();
+        while (going)
+        {
+            rt_task_wait_period(NULL);
+        
+            bt_cheetah_collect_single_batch(ch_handle, &biotac, &data, NO);
+            
+            btInput[0] = x++; //Counter to ensure fresh batch of data
+            btInput[1] = data.bt[0].pdc;
+            btInput[2] = data.bt[0].tac;
+            btInput[3] = data.bt[0].tdc;
+            
+            for(i=0; i<19; i++) //Set electrode values into logget
+            {
+                btInput[i+4]= data.bt[0].elec[i];
+            }
+            
+            for(i=0; i<22; i++) //Set pac into a singe row to be pulled out
+            {
+                btInput[i+23] = data.bt[0].pac[i];
+            }
+            
+            btEoSys.setValue(btInput);
+        }
+
     }
-
-
 }
 
 #pragma mark - canThread
@@ -565,8 +565,6 @@ void canReceiveThread(void *arg) {
     bairClaw.digit[0].PIPmotor.readAnalog1();
     rt_task_sleep(rt_timer_ns2ticks(delay));//
     bairClaw.digit[0].PIPmotor.readAnalog2();
-    
-    
     
     while (going)
     {
@@ -675,7 +673,7 @@ int main(int argc, char** argv) {
         host = "127.0.0.1";
     }
 
-    //Creation and spinoff of RT_Threads
+    //Creation and spinoff of RT_Threads (creates hard realtime thread)
     rt_task_create(&bt_record_thread, "btRecord", 0, 50, 0);
     rt_task_create(&can_receive_thread, "canReceive", 0, 51, 0);
 
@@ -716,9 +714,12 @@ int main(int argc, char** argv) {
 
     std::cout << "is running - ";
     std::cout << mem.isRunning() << std::endl;
-    while(!biotacInit)
+    if(!biotacOff)
     {
-        usleep(100000);
+        while(!biotacInit)
+        {
+            usleep(100000);
+        }
     }
     printf("Press [Enter] to continue ... sets shouldStart = TRUE");
 	fflush(stdout);
@@ -753,13 +754,10 @@ int main(int argc, char** argv) {
     }
     
  
-    
-
     // Start loadCellRecordThread
     boost::thread t(loadcellRecordThread), d(displayThread), BCMatlabVis(bairClawMatlabVisualizerSender);
     
     //bairClaw.digit[0].setStaticFriction();
-    
     printf(" Static setFriction complete MCP-F - %d MCP-E - %d \n Press [Enter] to start logging", bairClaw.digit[0].FEmotor.staticFrictionF, bairClaw.digit[0].FEmotor.staticFrictionE);
 	fflush(stdout);
 	getchar();

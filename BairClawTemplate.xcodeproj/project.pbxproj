@@ -38,6 +38,8 @@
 		871B503518231E3F0000C597 /* BairClawInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BairClawInterface.h; sourceTree = "<group>"; };
 		871B503618231E3F0000C597 /* EPOSInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EPOSInterface.cpp; sourceTree = "<group>"; };
 		871B503718231E3F0000C597 /* EPOSInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EPOSInterface.h; sourceTree = "<group>"; };
+		87234567193545FB008D398A /* BairClawMCPActuationJRadius.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawMCPActuationJRadius.h; sourceTree = "<group>"; };
+		8723456819354605008D398A /* BairClawActuationJ.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawActuationJ.h; sourceTree = "<group>"; };
 		8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawDataPlayBack.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		87B6958F18281D11002FD276 /* BairClawTemplate.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; name = BairClawTemplate.1; path = Resources/BairClawTemplate.1; sourceTree = "<group>"; };
 		87B6959018281D11002FD276 /* example.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = example.c; path = Resources/example.c; sourceTree = "<group>"; };
@@ -92,9 +94,27 @@
 				871B503718231E3F0000C597 /* EPOSInterface.h */,
 				871B503618231E3F0000C597 /* EPOSInterface.cpp */,
 				8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */,
+				87234565193544AD008D398A /* BairClawSupport */,
 				87B6958E18281C93002FD276 /* Resources */,
 			);
 			path = BairClawTemplate;
+			sourceTree = "<group>";
+		};
+		87234565193544AD008D398A /* BairClawSupport */ = {
+			isa = PBXGroup;
+			children = (
+				87234566193545E4008D398A /* ActuationMatrix */,
+			);
+			name = BairClawSupport;
+			sourceTree = "<group>";
+		};
+		87234566193545E4008D398A /* ActuationMatrix */ = {
+			isa = PBXGroup;
+			children = (
+				8723456819354605008D398A /* BairClawActuationJ.h */,
+				87234567193545FB008D398A /* BairClawMCPActuationJRadius.h */,
+			);
+			name = ActuationMatrix;
 			sourceTree = "<group>";
 		};
 		87B6958E18281C93002FD276 /* Resources */ = {

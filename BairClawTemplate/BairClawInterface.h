@@ -37,7 +37,7 @@
 
 namespace barrett{
 
-
+#pragma mark - BCDigit
 class BCDigit {
 	int setCounter;
 	int JointShutOffRange;
@@ -51,6 +51,8 @@ public:
 	int ADABmin, FEmin, PIPmin, DIPmin;
 	int ADABmax, FEmax, PIPmax, DIPmax;
 	double ADABRange, FERange, PIPRange, DIPRange;
+    double mcpFest, mcpEest, pipFest, pipEest, mcpFestOffset, mcpEestOffset, pipFestOffset, pipEestOffset;
+                
 	int normalRotation;                   //used to determine is flextion is pos mA. Set to neg(-) if flipped
 	 //used to set static friction for each joint during initilization.
     std::string name;                     //name assined to BCdigit as a descrpiter
@@ -67,21 +69,30 @@ public:
 		isInit = 0;
 		JointShutOffRange = 5;
 		normalRotation = 0; //Default to normal rotation (+) mA for flextion
+        
+        //Initialize tendonForce Variables
+        mcpFest = 0; mcpEest = 0; pipFest = 0; pipEest = 0;
+        mcpFestOffset = 0; mcpEestOffset = 0; pipFestOffset = 0; pipEestOffset = 0;
+        
 	}
     
-    
+    /** \returns No return set jointVal[] property of class BCDigit
+     *  \note neets to be called each time CAN dat frame is recieved to set data[8] to joint values
+     */
 	void set(unsigned char data[]){
 		jointVal[0] = data[0] + (data[1] << 8);
 		jointVal[1] = data[2] + (data[3] << 8);
 		jointVal[2] = data[4] + (data[5] << 8);
 		jointVal[3] = data[6] + (data[7] << 8);
 	}
-    
+    void setTendonForceOffset();
+    void calcTendonForce();
 	void init();
 	void vis ();
 	void calcPercentage();
 	void setStaticFriction();
 	void backDrive();
+    
 	/*
      int  limitsOk(){
      
@@ -103,7 +114,10 @@ public:
 };
 
 
-//BCHand class pulls in BCDigit & EPOS
+#pragma mark - BCHand
+/**
+ * \desc BCHand uses BCDigit to build a reference to complete hand. It also inherets from EPOS interface.
+ */ 
 class BCHand
 {
 public:

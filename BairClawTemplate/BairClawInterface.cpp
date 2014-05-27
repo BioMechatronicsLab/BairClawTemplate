@@ -61,61 +61,42 @@ void BCInitThread( BCDigit* digit, const bool* initgoing) {
 		printf("press [Enter] to continue to joint angle visualization.\n");
 	}
 }
-void BCDigit::init(){
-	bool initgoing = 1;
-	printf("About to start init thread ");
-	boost::thread initthread(BCInitThread, &(*this), &initgoing);
-	detail::waitForEnter();
-	isInit = 1;
-	initgoing = false;
-	initthread.join();
+/** \desc BairClawVisThread need to be developed. It will provide an look into the system propties to be displyed periodically.
+ */
+void BairClawVisThread( BCDigit* digit, const bool* visgoing) {
+ 
 }
 
-void BairClawVisThread( BCDigit* digit, const bool* visgoing) {
-    /*
-     int thrdCnt = 0;
-     
-     digit->AdAbRange = (double)digit->AdAbmax - (double)digit->AdAbmin;
-     digit->FERange   = (double)digit->FEmax   - (double)digit->FEmin;
-     digit->PIPRange  = (double)digit->PIPmax  - (double)digit->PIPmin;
-     digit->DIPRange  = (double)digit->DIPmax  - (double)digit->DIPmin;
-     
-     
-     while (*visgoing) {
-     thrdCnt++;
-     digit->AdAbPercent = 100 - ( ((double)digit->AdAbRange - ((double)digit->AdAb - (double)digit->AdAbmin)) / (double)digit->AdAbRange ) *100;
-     digit->FEPercent =    ( ((double)digit->FERange   - ((double)digit->FE   - (double)digit->FEmin))   / (double)digit->FERange )   *100;
-     digit->PIPPercent =  100 - ( ((double)digit->PIPRange  - ((double)digit->PIP  - (double)digit->PIPmin))  / (double)digit->PIPRange )  *100;
-     digit->DIPPercent =   ( ((double)digit->DIPRange  - ((double)digit->DIP  - (double)digit->DIPmin))  / (double)digit->DIPRange )  *100;
-     
-     
-     system("clear");
-     printf("README: Joint Visualization. Press [Enter] if initialization is acceptable.\n\n");
-     printf("AdAb_per = %4.2f, AdAbReadOut = %d\n", digit->AdAbPercent, digit->AdAb);
-     printf("FE_per = %4.2f, FEReadOut = %d\n", digit->FEPercent, digit->FE);
-     printf("PIP_per = %4.2f, PIPReadOut = %d\n", digit->PIPPercent, digit->PIP);
-     printf("DIP_per = %4.2f, DIPReadOut = %d\n\nAd/Ab\n", digit->DIPPercent, digit->DIP);
-     for(int i=0;i<digit->AdAbPercent;i++) printf("|");
-     printf("\n");
-     for(int i=0;i<digit->AdAbPercent;i++) printf("|");
-     printf("\nF/E\n");
-     for(int i=0;i<digit->FEPercent;i++) printf("|");
-     printf("\n");
-     for(int i=0;i<digit->FEPercent;i++) printf("|");
-     printf("\nPIP\n");
-     for(int i=0;i<digit->PIPPercent;i++) printf("|");
-     printf("\n");
-     for(int i=0;i<digit->PIPPercent;i++) printf("|");
-     printf("\nDIP\n");
-     for(int i=0;i<digit->DIPPercent;i++) printf("|");
-     printf("\n");
-     for(int i=0;i<digit->DIPPercent;i++) printf("|");
-     printf("\n");
-     
-     usleep(10000);
-     }
-     printf("exiting initThread\n");
-     */
+void BCDigit::setTendonForceOffset()
+{
+    //Models fit it matlab then copied into program
+    mcpFestOffset = -5.971124e+02 + (+8.402597e-01 * FEmotor.A2) + (-4.617917e-02 * FEmotor.A1) + (-1.800978e-02 * PIPmotor.A2) + (-5.823183e-02 * PIPmotor.A1);
+    mcpEestOffset = -1.753974e+03 + (-1.241008e-02 * FEmotor.A2) + (+2.670576e+00 * FEmotor.A1) + (-3.922166e-02 * PIPmotor.A2) + (-1.786393e-01 * PIPmotor.A1);
+    pipFestOffset = -8.943469e+02 + (-3.292929e-02 * FEmotor.A2) + (-2.342654e-02 * FEmotor.A1) + (+9.952569e-01 * PIPmotor.A2) + (-5.316950e-02 * PIPmotor.A1);
+    pipEestOffset = -2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1);
+}
+    
+    
+void BCDigit::calcTendonForce()
+{
+    //Models fit it matlab then copied into program
+    //If you don't want baseline values from the SG equation then don't cal setTedonForceOffset priot to calling calcTendonForce
+    mcpFest = (-5.971124e+02 + (+8.402597e-01 * FEmotor.A2) + (-4.617917e-02 * FEmotor.A1) + (-1.800978e-02 * PIPmotor.A2) + (-5.823183e-02 * PIPmotor.A1)) - (mcpFestOffset);
+    mcpEest = (-1.753974e+03 + (-1.241008e-02 * FEmotor.A2) + (+2.670576e+00 * FEmotor.A1) + (-3.922166e-02 * PIPmotor.A2) + (-1.786393e-01 * PIPmotor.A1)) - (mcpEestOffset);
+    pipFest = (-8.943469e+02 + (-3.292929e-02 * FEmotor.A2) + (-2.342654e-02 * FEmotor.A1) + (+9.952569e-01 * PIPmotor.A2) + (-5.316950e-02 * PIPmotor.A1)) - (pipFestOffset);
+    pipEest = (-2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1)) - (pipEestOffset);
+    
+    
+}
+    
+void BCDigit::init(){
+    bool initgoing = 1;
+    printf("About to start init thread ");
+    boost::thread initthread(BCInitThread, &(*this), &initgoing);
+    detail::waitForEnter();
+    isInit = 1;
+    initgoing = false;
+    initthread.join();
 }
 
 void BCDigit::calcPercentage(){
@@ -255,6 +236,8 @@ void BCHand::print(){
     
 }
     
+    
+
     
     
     
