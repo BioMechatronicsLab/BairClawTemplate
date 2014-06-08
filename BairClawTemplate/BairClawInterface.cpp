@@ -214,9 +214,7 @@ void BCDigit::backDrive(){
     
 }
 void BCHand::print(){
-    
   //- NICE DISPLAY -----------------------------------------
-
     for(int i=0; i < digit.size(); i++)
     {
         digit[i].calcPercentage();
@@ -237,6 +235,43 @@ void BCHand::print(){
 }
     
     
+template <typename DerivedA, typename DerivedB>
+void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T)
+{
+    if( (DH.size() == 4))
+    {
+        /*T=[ cos(theta)  -sin(theta)*cos(alpha)  sin(theta)*sin(alpha) a*cos(theta);...
+         sin(theta)   cos(theta)*cos(alpha) -cos(theta)*sin(alpha) a*sin(theta);...
+         0            sin(alpha)             cos(alpha)            d           ;...
+         0            0                      0                    1           ]; */
+        double a = DH(0), alpha = DH(1), d = DH(2), theta = DH(3);
+        
+        T(0,0) = cos(theta);
+        T(0,1) = -sin(theta)*cos(alpha);
+        T(0,2) = sin(theta)*sin(alpha);
+        T(0,3) = a*cos(theta);
+        
+        T(1,0) = sin(theta);
+        T(1,1) = cos(theta)*cos(alpha);
+        T(1,2) = -cos(theta)*sin(alpha);
+        T(1,3) = a*sin(theta);
+        
+        T(2,0) = 0;
+        T(2,1) = sin(alpha);
+        T(2,2) = cos(alpha);
+        T(2,3) = d;
+        
+        T(3,0) = 0;
+        T(3,1) = 0;
+        T(3,2) = 0;
+        T(3,3) = 1;
+    }
+    else
+    {
+        printf("DH2T dimensions are off\n");
+    }
+    
+}
 
     
     

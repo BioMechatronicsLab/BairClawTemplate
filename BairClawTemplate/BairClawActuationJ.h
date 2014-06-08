@@ -1,12 +1,27 @@
+//
+//  BairClawMCPActuationJ.h
+//
+//  Created by Randy Hellman on 5/21/14.
+//  Copyright (c) 2014 Randy Hellman. All rights reserved.
+//
+
+#ifndef bairClawTemplate_BairClawMCPActuationJ_h
+#define bairClawTemplate_BairClawMCPActuationJ_h
 
 #include <map>
+#include <cmath>
+#include <ctime>
+#include "BairClawMCPActuationJRadius.h"
 
 
-double sign(double test){
-    return test > 0 ? 1 : -1;
-}
+double TESTsign(double test);
 /**
  *  \desc MCPActuationRadius is a class that finds tabluated values for 
+ *
+ *  NEEDED to construct matrix
+ *  MCPActuationRadius mcptest;
+ *  mcptest.flextionMap  = &flextionMap;
+ *  mcptest.extentionMap = &extentionMap;
  *  \returns No return set jointVal[] property of class BCDigit
  */
 class MCPActuationRadius{
@@ -24,17 +39,17 @@ public:
         double static index = (int)jointAngle;
         double static indexDec = jointAngle - (int)jointAngle;
 
-        if( abs(indexDec) > .75)
+        if( (indexDec) > .75) //abs
         {
             indexDec = 1;
-        }else if( (abs(indexDec)) < .25 )
+        }else if( ( (indexDec)) < .25 ) //abs
         {
             indexDec = 0;
         }else
         {
             indexDec = 0.5;
         }
-        index = index + sign(jointAngle)*indexDec;
+        //index = index + sign(jointAngle)*indexDec;
         
         if( flextionMap->find(index) != flextionMap->end())
         {
@@ -49,17 +64,17 @@ public:
         double static index = (int)jointAngle;
         double static indexDec = jointAngle - (int)jointAngle;
         
-        if( abs(indexDec) > .75)
+        if( (indexDec) > .75) //abs
         {
             indexDec = 1;
-        }else if( (abs(indexDec)) < .25 )
+        }else if( ( (indexDec)) < .25 ) // abs
         {
             indexDec = 0;
         }else
         {
             indexDec = 0.5;
         }
-        index = index + sign(jointAngle)*indexDec;
+        //index = index + sign(jointAngle)*indexDec;
         
         if( extentionMap->find(index) != extentionMap->end())
         {
@@ -74,4 +89,5 @@ public:
 };
 
 
+#endif
 

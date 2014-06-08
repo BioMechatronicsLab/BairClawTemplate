@@ -11,6 +11,7 @@
 		871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B502B18231DF50000C597 /* BairClawMain.cpp */; };
 		871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B503418231E3F0000C597 /* BairClawInterface.cpp */; };
 		871B503918231E3F0000C597 /* EPOSInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B503618231E3F0000C597 /* EPOSInterface.cpp */; };
+		8723456A193563E0008D398A /* BairClawActuationJ.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87234569193563E0008D398A /* BairClawActuationJ.cpp */; };
 		87B6959118281D11002FD276 /* example.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959018281D11002FD276 /* example.c */; };
 		87B695931828319A002FD276 /* log_sg_data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87B695921828319A002FD276 /* log_sg_data.cpp */; };
 		87B6959818286CAC002FD276 /* biotac.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959418286CAC002FD276 /* biotac.c */; };
@@ -40,6 +41,7 @@
 		871B503718231E3F0000C597 /* EPOSInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EPOSInterface.h; sourceTree = "<group>"; };
 		87234567193545FB008D398A /* BairClawMCPActuationJRadius.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawMCPActuationJRadius.h; sourceTree = "<group>"; };
 		8723456819354605008D398A /* BairClawActuationJ.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawActuationJ.h; sourceTree = "<group>"; };
+		87234569193563E0008D398A /* BairClawActuationJ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BairClawActuationJ.cpp; sourceTree = "<group>"; };
 		8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawDataPlayBack.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		87B6958F18281D11002FD276 /* BairClawTemplate.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; name = BairClawTemplate.1; path = Resources/BairClawTemplate.1; sourceTree = "<group>"; };
 		87B6959018281D11002FD276 /* example.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = example.c; path = Resources/example.c; sourceTree = "<group>"; };
@@ -85,33 +87,28 @@
 				871B502B18231DF50000C597 /* BairClawMain.cpp */,
 				8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */,
 				87E4433A184E5EFC00BDD2AD /* codeSnidbits.h */,
-				87B6959418286CAC002FD276 /* biotac.c */,
-				87B6959518286CAC002FD276 /* biotac.h */,
-				87B6959618286CAC002FD276 /* cheetah.c */,
-				87B6959718286CAC002FD276 /* cheetah.h */,
-				871B503518231E3F0000C597 /* BairClawInterface.h */,
-				871B503418231E3F0000C597 /* BairClawInterface.cpp */,
-				871B503718231E3F0000C597 /* EPOSInterface.h */,
-				871B503618231E3F0000C597 /* EPOSInterface.cpp */,
-				8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */,
-				87234565193544AD008D398A /* BairClawSupport */,
+				87CC3CBF1936B5500084E727 /* SupportFiles */,
 				87B6958E18281C93002FD276 /* Resources */,
 			);
 			path = BairClawTemplate;
 			sourceTree = "<group>";
 		};
-		87234565193544AD008D398A /* BairClawSupport */ = {
+		87234565193544AD008D398A /* BairClaw */ = {
 			isa = PBXGroup;
 			children = (
+				871B503518231E3F0000C597 /* BairClawInterface.h */,
+				871B503418231E3F0000C597 /* BairClawInterface.cpp */,
+				8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */,
 				87234566193545E4008D398A /* ActuationMatrix */,
 			);
-			name = BairClawSupport;
+			name = BairClaw;
 			sourceTree = "<group>";
 		};
 		87234566193545E4008D398A /* ActuationMatrix */ = {
 			isa = PBXGroup;
 			children = (
 				8723456819354605008D398A /* BairClawActuationJ.h */,
+				87234569193563E0008D398A /* BairClawActuationJ.cpp */,
 				87234567193545FB008D398A /* BairClawMCPActuationJRadius.h */,
 			);
 			name = ActuationMatrix;
@@ -126,6 +123,36 @@
 				87B695921828319A002FD276 /* log_sg_data.cpp */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		87CC3CBF1936B5500084E727 /* SupportFiles */ = {
+			isa = PBXGroup;
+			children = (
+				87234565193544AD008D398A /* BairClaw */,
+				87CC3CC11936B5790084E727 /* BioTac */,
+				87CC3CC01936B5620084E727 /* EPOS */,
+			);
+			name = SupportFiles;
+			sourceTree = "<group>";
+		};
+		87CC3CC01936B5620084E727 /* EPOS */ = {
+			isa = PBXGroup;
+			children = (
+				871B503718231E3F0000C597 /* EPOSInterface.h */,
+				871B503618231E3F0000C597 /* EPOSInterface.cpp */,
+			);
+			name = EPOS;
+			sourceTree = "<group>";
+		};
+		87CC3CC11936B5790084E727 /* BioTac */ = {
+			isa = PBXGroup;
+			children = (
+				87B6959418286CAC002FD276 /* biotac.c */,
+				87B6959518286CAC002FD276 /* biotac.h */,
+				87B6959618286CAC002FD276 /* cheetah.c */,
+				87B6959718286CAC002FD276 /* cheetah.h */,
+			);
+			name = BioTac;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -181,6 +208,7 @@
 			files = (
 				871B503918231E3F0000C597 /* EPOSInterface.cpp in Sources */,
 				87B695931828319A002FD276 /* log_sg_data.cpp in Sources */,
+				8723456A193563E0008D398A /* BairClawActuationJ.cpp in Sources */,
 				871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */,
 				87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */,
 				87B6959918286CAC002FD276 /* cheetah.c in Sources */,
@@ -265,6 +293,11 @@
 		871B503218231DF50000C597 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"/Users/rbhellman/Dropbox/Developer/frameworks/eigen/**",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -272,6 +305,11 @@
 		871B503318231DF50000C597 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"/Users/rbhellman/Dropbox/Developer/frameworks/eigen/**",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

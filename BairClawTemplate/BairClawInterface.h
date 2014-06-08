@@ -30,12 +30,19 @@
 #include <barrett/log.h>
 #include <barrett/products/product_manager.h>
 
-#include "EPOSInterface.h"
+#include "EPOSInterface.h" //EPOS control outside of digit control
+#include "BairClawActuationJ.h" //used to determine moment arms for BairClawMCP
+
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 
-
-
+using namespace Eigen;
 namespace barrett{
+    
+template <typename DerivedA, typename DerivedB>
+void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T);
+    
 
 #pragma mark - BCDigit
 class BCDigit {
@@ -123,10 +130,17 @@ class BCHand
 public:
     std::vector<BCDigit> digit; //BCDigitPointer
     std::string name;
+    MCPActuationRadius mcpActuationRadius;
 
-    BCHand(int NumberOfDigits, const bus::CANSocket* busSet, int statingNode=1)
+    BCHand(int NumberOfDigits, const bus::CANSocket* busSet, int startingNode=1)
     {
-        digit.push_back(BCDigit(1, busSet));
+        for( int i=0; i<startingNode; i++ )
+        {
+            digit.push_back(BCDigit(startingNode+i, busSet));
+        }
+        //mcpActuationRadius.flextionMap  = &flextionMap;
+        //mcpActuationRadius.extentionMap = &extentionMap;
+        
     }
     void print(); //Displays bairclaw data on screen at ~10Hz not to be called from a realtime thread! 
     
