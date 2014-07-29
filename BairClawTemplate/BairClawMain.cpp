@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <math.h>
 #include <unistd.h>
+#include <ctime>
 
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
@@ -654,7 +655,37 @@ void canReceiveThread(void *arg) {
 
 int main(int argc, char** argv) {
     mlockall(MCL_CURRENT|MCL_FUTURE);/* Avoids memory swapping for this program */
+    
+    DHparams DHp;
+    
 
+    
+    DHp.calcT();
+    int runNum = 1000000;
+    VectorXd thetaUpdate(4);
+    clock_t begin = clock();
+    for(int i=0; i < runNum; i++)
+    {
+        thetaUpdate << 0, 1, 0, 1;
+        DHp.calcT(thetaUpdate);
+        if( i%10000 == 0)
+            std::cout << (double(i)/double(runNum))*100 << "%" << std::endl;
+        DHp.calcJacobian();
+        DHp.pinvJacobian();
+        
+    }
+    clock_t end = clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    
+    std::cout << "elapsed_secs = " << elapsed_secs << std::endl;
+    std::cout << "Hz = " << double(runNum)/elapsed_secs << std::endl;
+    
+    std::cout << "Jacobian" << std::endl << std::endl;
+    std::cout << DHp.jacobian << std::endl;
+    std::cout << std::endl << "pinv(Jacobian) " << std::endl;
+    std::cout << DHp.jacobianPseudoInverse << std::endl;
+    
+    
     //make temp logging file info
     char tmpFile[] = "/tmp/btXXXXXX";
 	if (mkstemp(tmpFile) == -1)
@@ -850,7 +881,7 @@ int main(int argc, char** argv) {
     d.join(); //Stop display thread
     BCMatlabVis.join();
     t.interrupt(); //Use interrupt instead of join() becasue recvfrom is blocking and if we lose network won't exit.
-   
+    std::cout << " About to remove tasks" << std::endl;
 
     delete playbackData;
     rt_task_delete(&bt_record_thread);
