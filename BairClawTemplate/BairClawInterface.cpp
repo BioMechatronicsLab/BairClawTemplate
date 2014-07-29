@@ -3,11 +3,11 @@
 
 namespace barrett {
 
-//##########################################################################
-////////////////////////////////////////////////////////////////////////////
-////////////////         BAIRCLAW Implementation          //////////////////
-////////////////////////////////////////////////////////////////////////////
-//##########################################################################
+//############################################################################################################
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////         BAIRCLAW Implementation          /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//############################################################################################################
 
 void BCInitThread( BCDigit* digit, const bool* initgoing) {
     
@@ -17,17 +17,55 @@ void BCInitThread( BCDigit* digit, const bool* initgoing) {
 	printf("\nWould you like to run initialization? [y or n (use default ranges) ]: \n");
 	input = getchar();
     
-    printf("press [Enter] to continue to joint angle visualization.\n");
-
+	if(input == 'y')
+	{
+//		digit->AdAbmin = digit->AdAb;
+//		digit->FEmin   = digit->FE;
+//		digit->DIPmin  = digit->DIP;
+//		digit->PIPmin  = digit->PIP;
+//		digit->AdAbmax = digit->AdAb;
+//		digit->FEmax   = digit->FE;
+//		digit->DIPmax  = digit->DIP;
+//		digit->PIPmax  = digit->PIP;
+//        
+//		while (*initgoing) {
+//			thrdCnt++;
+//			// MIN
+//			if( (digit->AdAb) < (digit->AdAbmin))   digit->AdAbmin = digit->AdAb;
+//			if( (digit->FE)   < (digit->FEmin  ))   digit->FEmin = digit->FE;
+//			if( (digit->DIP)  < (digit->DIPmin ))   digit->DIPmin = digit->DIP;
+//			if( (digit->PIP)  < (digit->PIPmin ))   digit->PIPmin = digit->PIP;
+//			// MAX
+//			if( (digit->AdAb) > (digit->AdAbmax))   digit->AdAbmax = digit->AdAb;
+//			if( (digit->FE)   > (digit->FEmax  ))   digit->FEmax = digit->FE;
+//			if( (digit->DIP)  > (digit->DIPmax ))   digit->DIPmax = digit->DIP;
+//			if( (digit->PIP)  > (digit->PIPmax ))   digit->PIPmax = digit->PIP;
+//			//
+//            
+//			if(thrdCnt % 5 == 0)
+//			{
+//				system("clear");
+//				printf("README: Cycle all joints until you have reached the \n        desired min and max for each joint.\n\n");
+//				printf("        AdAb     FE    PIP     DIP\n");
+//				printf("Current %d     %d     %d      %d \n", digit->AdAb   , digit->FE   , digit->PIP   , digit->DIP   );
+//				printf(" min    %d     %d     %d      %d \n", digit->AdAbmin, digit->FEmin, digit->PIPmin, digit->DIPmin);
+//				printf(" max    %d     %d     %d      %d \n", digit->AdAbmax, digit->FEmax, digit->PIPmax, digit->DIPmax);
+//			}
+//			usleep(5000);
+//            
+//		}
+//		printf("exiting initThread\n");
+	}
+	else
+	{
+		printf("press [Enter] to continue to joint angle visualization.\n");
+	}
 }
 /** \desc BairClawVisThread need to be developed. It will provide an look into the system propties to be displyed periodically.
  */
 void BairClawVisThread( BCDigit* digit, const bool* visgoing) {
  
 }
-    
-    
-#pragma mark - BCDigit
 
 void BCDigit::setTendonForceOffset()
 {
@@ -197,7 +235,43 @@ void BCHand::print(){
 }
     
     
-
+template <typename DerivedA, typename DerivedB>
+void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T)
+{
+    if( (DH.size() == 4))
+    {
+        /*T=[ cos(theta)  -sin(theta)*cos(alpha)  sin(theta)*sin(alpha) a*cos(theta);...
+         sin(theta)   cos(theta)*cos(alpha) -cos(theta)*sin(alpha) a*sin(theta);...
+         0            sin(alpha)             cos(alpha)            d           ;...
+         0            0                      0                    1           ]; */
+        double a = DH(0), alpha = DH(1), d = DH(2), theta = DH(3);
+        
+        T(0,0) = cos(theta);
+        T(0,1) = -sin(theta)*cos(alpha);
+        T(0,2) = sin(theta)*sin(alpha);
+        T(0,3) = a*cos(theta);
+        
+        T(1,0) = sin(theta);
+        T(1,1) = cos(theta)*cos(alpha);
+        T(1,2) = -cos(theta)*sin(alpha);
+        T(1,3) = a*sin(theta);
+        
+        T(2,0) = 0;
+        T(2,1) = sin(alpha);
+        T(2,2) = cos(alpha);
+        T(2,3) = d;
+        
+        T(3,0) = 0;
+        T(3,1) = 0;
+        T(3,2) = 0;
+        T(3,3) = 1;
+    }
+    else
+    {
+        printf("DH2T dimensions are off\n");
+    }
+    
+}
 
     
     

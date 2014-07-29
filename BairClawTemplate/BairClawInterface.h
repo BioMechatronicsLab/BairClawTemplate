@@ -35,18 +35,13 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-//#include <Eigen/SVD>
-
 
 
 using namespace Eigen;
-
 namespace barrett{
     
 template <typename DerivedA, typename DerivedB>
 void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T);
-    
-
     
 
 #pragma mark - BCDigit
@@ -64,15 +59,13 @@ public:
 	int ADABmax, FEmax, PIPmax, DIPmax;
 	double ADABRange, FERange, PIPRange, DIPRange;
     double mcpFest, mcpEest, pipFest, pipEest, mcpFestOffset, mcpEestOffset, pipFestOffset, pipEestOffset;
-	int normalRotation;     //used to determine is flextion is pos mA. Set to neg(-) if flipped
+                
+	int normalRotation;                   //used to determine is flextion is pos mA. Set to neg(-) if flipped
+	 //used to set static friction for each joint during initilization.
+    std::string name;                     //name assined to BCdigit as a descrpiter
     
-    std::string description; //assined to BCdigit as a descrpiter
-
-    // Static member variables & functions //
-    static MCPActuationRadius mcpActuationRadius;
-    
-    // Constructor. Minimal error checking be carefule and make sure you
-    // know what you are doing!!
+	// Constructor. Minimal error checking be carefule and make sure you
+	// know what you are doing!!
 	BCDigit(int node, const bus::CANSocket* busSet): FEmotor( node, busSet), PIPmotor( node+1, busSet), ADABmotor( node+2, busSet), node(node)
 	{
 		adab = 0; ADABmin = 18 ; ADABmax = 1020;
@@ -87,12 +80,11 @@ public:
         //Initialize tendonForce Variables
         mcpFest = 0; mcpEest = 0; pipFest = 0; pipEest = 0;
         mcpFestOffset = 0; mcpEestOffset = 0; pipFestOffset = 0; pipEestOffset = 0;
-    
         
 	}
     
     /** \returns No return set jointVal[] property of class BCDigit
-     *  \note needs to be called each time CAN dat frame is recieved to set data[8] to joint values
+     *  \note neets to be called each time CAN dat frame is recieved to set data[8] to joint values
      */
 	void set(unsigned char data[]){
 		jointVal[0] = data[0] + (data[1] << 8);
@@ -107,7 +99,6 @@ public:
 	void calcPercentage();
 	void setStaticFriction();
 	void backDrive();
-    
     
 	/*
      int  limitsOk(){
@@ -125,7 +116,7 @@ public:
      return limit;
      } */
 	void print(){
-        std::cout << description << std::endl;
+        std::cout << name << std::endl;
 	}
 };
 
@@ -139,189 +130,27 @@ class BCHand
 public:
     std::vector<BCDigit> digit; //BCDigitPointer
     std::string name;
+    MCPActuationRadius mcpActuationRadius;
 
-    
     BCHand(int NumberOfDigits, const bus::CANSocket* busSet, int startingNode=1)
     {
         for( int i=0; i<startingNode; i++ )
         {
             digit.push_back(BCDigit(startingNode+i, busSet));
         }
+        //mcpActuationRadius.flextionMap  = &flextionMap;
+        //mcpActuationRadius.extentionMap = &extentionMap;
         
     }
     void print(); //Displays bairclaw data on screen at ~10Hz not to be called from a realtime thread! 
     
 };
-
-    
-#pragma mark - BioMechMatrixManip
-    
-    
-#define NUM_LINKS       4
-#define LINK_1          0.0422
-#define LINK_1_OFFSET  -0.0128
-#define LINK_2          0.0318
-#define LINK_3          0.0200
-
-class DHparams
-{
-public: //remove later once debuging
-    VectorXd theta;
-    MatrixXd jacobian;
-    /**
-     * jacobianPseudoInvers null until calcJacobian and pinvJacobian are called
-     */
-    MatrixXd jacobianPseudoInverse;
-    
-public:
-    std::vector<MatrixXd> transformationMatrixBetweenLink;
-    std::vector<MatrixXd> transformationMatrixToGlobal;
-    
-    std::vector<VectorXd> DH;
-    
-    DHparams()
-    {
-        jacobian.resize(6,NUM_LINKS);
-        jacobian.Zero(6,NUM_LINKS);
-        jacobianPseudoInverse.resize(NUM_LINKS,6);
-        jacobianPseudoInverse.Zero(NUM_LINKS,6);
-        theta.resize(4);
-        theta << 0,0,0,0;
-        theta(0) = 1.3;
-        for(int i=0; i<NUM_LINKS; i++)
-        {
-            transformationMatrixBetweenLink.push_back(MatrixXd::Identity(4,4));
-            transformationMatrixToGlobal.push_back(MatrixXd::Identity(4,4));
-            DH.push_back(VectorXd::Zero(4));
-        }
-        //Assemble DH parameteres from initial theta values
-        DH[0] <<      0,  -M_PI/2,             0, theta(0);
-        DH[1] << LINK_1,        0, LINK_1_OFFSET, theta(1);
-        DH[2] << LINK_2,        0,             0, theta(2);
-        DH[3] << LINK_3,        0,             0, theta(3);
-        
-    }
-    
-    /**
-     * Computes all transformation matrices from the updated theat(input)
-     */
-    void calcT(VectorXd thetaUpdate)
-    {
-        theta = thetaUpdate;
-        for(int i=0; i<NUM_LINKS; i++)
-        {
-            DH[i](3) = thetaUpdate(i);
-        }
-        calcT();
-    }
-    /**
-     * Computes all transformation matrices from the current theta values
-     */
-    void calcT(){
-        
-        for(int i=0; i<NUM_LINKS; i++)
-        {//computes tranformation matrices from DH paramters
-            DH2T(DH[i], transformationMatrixBetweenLink[i]);
-        }
-        
-        for(int i=0; i<NUM_LINKS; i++)
-        {// calculates each transformation from current frame to global
-            if(i == 0)
-            {
-                transformationMatrixToGlobal[i] = transformationMatrixBetweenLink[i];
-            }
-            else
-            {
-                transformationMatrixToGlobal[i] = transformationMatrixToGlobal[i-1] * transformationMatrixBetweenLink[i];
-            }
-        }
-    }
-    /** \returns
-     *\note Function to create Jacobial 6 x n where n is the number of links
-     * Ti = 6x n*4 matrix that is a list of R01,R20....,Rn0
-     *   Jvi = { Zi-1 X (On-Oi-1)   revolute
-     *         {  Zi-1              prismatic
-     *   Jwi = { Zi-1               revolute
-     *         {  0                 prismatic
-     * ------------- JACOBIAN ONLY GOOD FOR ROTATIONAL JOINTS ----------------
-     */
-    void calcJacobian()
-    {
-        static Vector3d z_pre, o_pre, crossP;
-        z_pre  << 0, 0, 1;
-        o_pre  << 0, 0, 0;
-        crossP << 0, 0, 0;
-        
-        
-        for(int i=0; i<NUM_LINKS; i++)
-        {
-            if(i > 0)
-            {
-                z_pre = transformationMatrixToGlobal[i-1].block(0,2,3,1);
-                o_pre = transformationMatrixToGlobal[i-1].block(0,3,3,1);
-            }
-            jacobian.block(0,i,3,1) = z_pre.cross((Vector3d)transformationMatrixToGlobal.back().block(0,3,3,1) - o_pre); // Vi
-            jacobian.block(3,i,3,1) = z_pre; // Wi
-        }
-    }
-    
-    void pinvJacobian()
-    {
-        static const double  pinvtoler=1.0e-6; // choose your tolerance wisely!
-        VectorXd singularValuesM(NUM_LINKS);
-        JacobiSVD<MatrixXd> svd(jacobian, ComputeThinU | ComputeThinV);
-        
-        for(int i=0; i<NUM_LINKS; i++)
-        {
-            if ( svd.singularValues()(i) > pinvtoler )
-                singularValuesM(i)= 1.0/svd.singularValues()(i);
-            else singularValuesM(i)=0;
-        }
-        jacobianPseudoInverse = (svd.matrixV() * singularValuesM.asDiagonal() * svd.matrixU().transpose());
-        
-    }
-};
-  
-template <typename DerivedA, typename DerivedB>
-void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T)
-{
-    if( (DH.size() == 4))
-    {
-        /*T=[ cos(theta)  -sin(theta)*cos(alpha)  sin(theta)*sin(alpha) a*cos(theta);...
-         sin(theta)   cos(theta)*cos(alpha) -cos(theta)*sin(alpha) a*sin(theta);...
-         0            sin(alpha)             cos(alpha)            d           ;...
-         0            0                      0                    1           ]; */
-        double a = DH(0), alpha = DH(1), d = DH(2), theta = DH(3);
-        
-        T(0,0) = cos(theta);
-        T(0,1) = -sin(theta)*cos(alpha);
-        T(0,2) = sin(theta)*sin(alpha);
-        T(0,3) = a*cos(theta);
-        
-        T(1,0) = sin(theta);
-        T(1,1) = cos(theta)*cos(alpha);
-        T(1,2) = -cos(theta)*sin(alpha);
-        T(1,3) = a*sin(theta);
-        
-        T(2,0) = 0;
-        T(2,1) = sin(alpha);
-        T(2,2) = cos(alpha);
-        T(2,3) = d;
-        
-        T(3,0) = 0;
-        T(3,1) = 0;
-        T(3,2) = 0;
-        T(3,3) = 1;
-    }
-    else
-    {
-        printf("DH2T dimensions are off\n");
-    }
-    
-}
     
     
     
     
 }; //From namespace barrett{}
+
+
+
 #endif

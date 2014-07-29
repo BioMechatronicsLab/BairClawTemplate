@@ -39,6 +39,7 @@
 		871B503518231E3F0000C597 /* BairClawInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BairClawInterface.h; sourceTree = "<group>"; };
 		871B503618231E3F0000C597 /* EPOSInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EPOSInterface.cpp; sourceTree = "<group>"; };
 		871B503718231E3F0000C597 /* EPOSInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EPOSInterface.h; sourceTree = "<group>"; };
+		87234567193545FB008D398A /* BairClawMCPActuationJRadius.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawMCPActuationJRadius.h; sourceTree = "<group>"; };
 		8723456819354605008D398A /* BairClawActuationJ.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawActuationJ.h; sourceTree = "<group>"; };
 		87234569193563E0008D398A /* BairClawActuationJ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BairClawActuationJ.cpp; sourceTree = "<group>"; };
 		8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawDataPlayBack.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -108,6 +109,7 @@
 			children = (
 				8723456819354605008D398A /* BairClawActuationJ.h */,
 				87234569193563E0008D398A /* BairClawActuationJ.cpp */,
+				87234567193545FB008D398A /* BairClawMCPActuationJRadius.h */,
 			);
 			name = ActuationMatrix;
 			sourceTree = "<group>";

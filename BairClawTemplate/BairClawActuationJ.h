@@ -11,14 +11,10 @@
 #include <map>
 #include <cmath>
 #include <ctime>
+#include "BairClawMCPActuationJRadius.h"
 
 
-
-double sign(double test);
-
-std::map<double, double> initMCPMomentFlex();
-std::map<double, double> initMCPMomentExt();
-
+double TESTsign(double test);
 /**
  *  \desc MCPActuationRadius is a class that finds tabluated values for 
  *
@@ -31,20 +27,14 @@ std::map<double, double> initMCPMomentExt();
 class MCPActuationRadius{
 
 public:
-    
     /** \desc extensionMap is pointer to the map of joint angles to exptension moment arm for the F/E MCP.
      */
-    std::map<double, double> extensionMap;
+    std::map<double, double> *extentionMap;
     /** \desc flexionMap is pointer to the map of joint angles to flextion moment arm for the F/E MCP.
      */
-    std::map<double, double> flexionMap;
-    MCPActuationRadius()
-    {
-        extensionMap = initMCPMomentExt();
-        flexionMap   = initMCPMomentFlex();
-        
-    }
-    double flexionRadius(double jointAngle)
+    std::map<double, double> *flextionMap;
+    
+    double flextionRadius(double jointAngle)
     {
         double static index = (int)jointAngle;
         double static indexDec = jointAngle - (int)jointAngle;
@@ -59,17 +49,17 @@ public:
         {
             indexDec = 0.5;
         }
-        index = index + sign(jointAngle)*indexDec;
+        //index = index + sign(jointAngle)*indexDec;
         
-        if( flexionMap.find(index) != flexionMap.end())
+        if( flextionMap->find(index) != flextionMap->end())
         {
-            return flexionMap.find(index)->second;
+            return flextionMap->find(index)->second;
         }else
         {
             return 0;
         }
     }
-    double extensionRadius(double jointAngle)
+    double extentionRadius(double jointAngle)
     {
         double static index = (int)jointAngle;
         double static indexDec = jointAngle - (int)jointAngle;
@@ -84,11 +74,11 @@ public:
         {
             indexDec = 0.5;
         }
-        index = index + sign(jointAngle)*indexDec;
+        //index = index + sign(jointAngle)*indexDec;
         
-        if( extensionMap.find(index) != extensionMap.end())
+        if( extentionMap->find(index) != extentionMap->end())
         {
-            return extensionMap.find(index)->second;
+            return extentionMap->find(index)->second;
         }else
         {
             return 0;
