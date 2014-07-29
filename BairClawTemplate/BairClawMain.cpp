@@ -862,6 +862,7 @@ int main(int argc, char** argv) {
                     
                 }
                 usleep(5000);
+                //Track period of tapping
                 
             }
         }
