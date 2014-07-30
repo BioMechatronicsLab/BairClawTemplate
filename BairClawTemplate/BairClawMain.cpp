@@ -657,7 +657,7 @@ int main(int argc, char** argv) {
     mlockall(MCL_CURRENT|MCL_FUTURE);/* Avoids memory swapping for this program */
     
     DHparams DHp;
-    
+    //------------------ FHN MERGER SUCCESS?
 
     
     DHp.calcT();
