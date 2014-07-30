@@ -102,7 +102,7 @@ void EPOS2::readAnalog1(){
     data[1] = 0X7c;
     data[2] = 0X20;
     data[3] = 0x01;
-	data[4] = 0;
+    data[4] = 0;
     data[5] = 0;
     data[6] = 0;
     data[7] = 0;
@@ -117,7 +117,7 @@ void EPOS2::readAnalog2(){
     data[1] = 0X7c;
     data[2] = 0X20;
     data[3] = 0x02;
-	data[4] = 0;
+    data[4] = 0;
     data[5] = 0;
     data[6] = 0;
     data[7] = 0;
