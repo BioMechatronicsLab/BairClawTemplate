@@ -98,8 +98,14 @@ void EPOS2::readAnalog(){
 void EPOS2::readAnalog1(){
 	unsigned char data[8];
 	int len =8;
-	data[0] = 0X40; data[1] = 0X7c; data[2] = 0X20; data[3] = 0x01;
-	data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
+	data[0] = 0X40;
+    data[1] = 0X7c;
+    data[2] = 0X20;
+    data[3] = 0x01;
+	data[4] = 0;
+    data[5] = 0;
+    data[6] = 0;
+    data[7] = 0;
 	bus->send(node, data, len);
 	A1flag = 0;
     
@@ -107,8 +113,14 @@ void EPOS2::readAnalog1(){
 void EPOS2::readAnalog2(){
 	unsigned char data[8];
 	int len =8;
-	data[0] = 0X40; data[1] = 0X7c; data[2] = 0X20; data[3] = 0x02;
-	data[4] = 0; data[5] = 0; data[6] = 0; data[7] = 0;
+	data[0] = 0X40;
+    data[1] = 0X7c;
+    data[2] = 0X20;
+    data[3] = 0x02;
+	data[4] = 0;
+    data[5] = 0;
+    data[6] = 0;
+    data[7] = 0;
 	bus->send(node, data, len);
 	A2flag = 0;
 }
