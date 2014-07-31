@@ -116,5 +116,43 @@ double changeInMotorPosFE = 0, changeInMotorPosPD = 0;
 	}
 
 
+//HOW to create a new rt_task
+RT_TASK taskName
+double T_s_delay = 0.01;
+
+void rtThreadName(void *arg){
+    
+    rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_delay));
+    while(!shouldStart)
+    {
+        rt_task_wait_period(NULL);
+        //PUT rt_loop execution stuff in here
+    }
+
+
+}
+
+main(***){
+    
+    rt_task_create(&taskName, "descriptive_name", 0, 51, 0);
+    rt_task_start(&taskName, &rtThreadName, NULL);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif

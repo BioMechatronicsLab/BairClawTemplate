@@ -25,6 +25,9 @@
 #include <ctime>
 #include <time.h>
 
+#include <boost/thread.hpp>
+#include <boost/thread/condition_variable.hpp>
+
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -33,7 +36,6 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <unistd.h>
 #include <barrett/os.h>  // For btsleep()
-#include <boost/thread.hpp>
 #include <barrett/bus/can_socket.h>
 // Base class: barrett::systems::System
 #include <barrett/systems/abstract/system.h>
@@ -650,6 +652,65 @@ void canReceiveThread(void *arg) {
 //                previous = now;
 }
 
+//RT_CONTROL_LOOP - this loop is used for maintain a desired finger tapping freq.
+#pragma mark - rt_control_loop
+
+
+double T_s_rtControlThreadDelay = 0.01;
+void rtControlThread(void *arg){
+    
+    rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_rtControlThreadDelay));
+                       
+    if(POSITIONCONTROL)
+    {
+        //----------- BAIRCLAW SIMPLE MOVE TO BE REMOVED LATER FOR ASU MARKING FILMING DAY
+        //============================================================================================//
+        bairClaw.digit[0].FEmotor.SetCurrentLimit(350);
+        bairClaw.digit[0].FEmotor.SetPositionProfile(1000,3500,3500);
+        bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
+        
+        bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
+        bairClaw.digit[0].PIPmotor.SetPositionProfile(1000,3500,3500);
+        bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
+        
+        
+        double desiredPos = 5, desiredPosPIPDIP = 10;
+        
+        double changeInMotorPosFE = 0, changeInMotorPosPD = 0;
+        int sw=0, count=0;
+        while (count<4000)
+        {
+            rt_task_wait_period(NULL);
+            
+            changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
+            changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
+            if(count % 2 == 0)
+                bairClaw.digit[0].FEmotor.MoveToPosition(changeInMotorPosFE, 1);
+            else
+                bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
+            
+            count++;
+            /*
+             if(count % 5 == 0){ //if set to 1 does nothing just left in for quick changes
+             system("clear");
+             indexFinger.print();
+             printf("\nchangeInMotorPosFE = %6.2f, desiredPos = %4.2f, indexFinger.FEPercent = %4.2f count = %d\n",changeInMotorPosFE, desiredPos, indexFinger.FEPercent, count);
+             printf("\nchangeInMotorPosPD = %6.2f, desiredPos = %4.2f, PIPPercent+DIPPercent = %4.2f count = %d\n",changeInMotorPosPD, desiredPos, indexFinger.PIPPercent+indexFinger.DIPPercent, count);
+             }*/
+            
+            if(count % 100 == 0){
+                sw++;
+                if(sw % 2 == 0 ){
+                    desiredPos = 30;
+                    desiredPosPIPDIP = 70;
+                }else{
+                    desiredPos = 5;
+                    desiredPosPIPDIP = 10;
+                }
+            }
+        }
+    }
+}
 
 
 #pragma mark - mainEntryPoint
@@ -816,59 +877,11 @@ int main(int argc, char** argv) {
     if(!DEBUG)
     {
         // Follow data2Track.bin
-    }else{
-        if(POSITIONCONTROL)
-        {
-            //----------- BAIRCLAW SIMPLE MOVE TO BE REMOVED LATER FOR ASU MARKING FILMING DAY
-            //============================================================================================//
-            bairClaw.digit[0].FEmotor.SetCurrentLimit(350);
-            bairClaw.digit[0].FEmotor.SetPositionProfile(1000,3500,3500);
-            bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
-            
-            bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
-            bairClaw.digit[0].PIPmotor.SetPositionProfile(1000,3500,3500);
-            bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
-            
-            
-            double desiredPos = 5, desiredPosPIPDIP = 10;
-            
-            double changeInMotorPosFE = 0, changeInMotorPosPD = 0;
-            int sw=0, count=0;
-            while (count<4000)
-            {
-                changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
-                changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
-                if(count % 2 == 0)
-                    bairClaw.digit[0].FEmotor.MoveToPosition(changeInMotorPosFE, 1);
-                else
-                    bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
-                
-                count++;
-                /*
-                if(count % 5 == 0){ //if set to 1 does nothing just left in for quick changes
-                    system("clear");
-                    indexFinger.print();
-                    printf("\nchangeInMotorPosFE = %6.2f, desiredPos = %4.2f, indexFinger.FEPercent = %4.2f count = %d\n",changeInMotorPosFE, desiredPos, indexFinger.FEPercent, count);
-                    printf("\nchangeInMotorPosPD = %6.2f, desiredPos = %4.2f, PIPPercent+DIPPercent = %4.2f count = %d\n",changeInMotorPosPD, desiredPos, indexFinger.PIPPercent+indexFinger.DIPPercent, count);
-                }*/
-                
-                if(count % 100 == 0){
-                    sw++;
-                    if(sw % 2 == 0 ){
-                        desiredPos = 30;
-                        desiredPosPIPDIP = 70;
-                    }else{
-                        desiredPos = 5;
-                        desiredPosPIPDIP = 10;
-                    }
-                    
-                }
-                usleep(5000 - 1000); // the minus 1000us is for the time the send the MoveToPosition command
-                //Track period of tapping
-                
-            }
-        }
-    }//============================================================================================//
+    }
+    else
+    {
+    
+    }
     
     
     
@@ -881,6 +894,7 @@ int main(int argc, char** argv) {
    
     bairClaw.digit[0].FEmotor.resetAll();
     going = false;
+    
     d.join(); //Stop display thread
     BCMatlabVis.join();
     t.interrupt(); //Use interrupt instead of join() becasue recvfrom is blocking and if we lose network won't exit.
