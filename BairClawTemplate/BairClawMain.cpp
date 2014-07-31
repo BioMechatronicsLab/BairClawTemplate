@@ -65,7 +65,7 @@
 #include <sys/socket.h>
 
 #define DEBUG true
-#define POSITIONCONTROL true
+#define POSITIONCONTROL false
 #define biotacOff false
 
 
@@ -74,7 +74,7 @@ using systems::connect;
 
 RT_TASK bt_record_thread;
 RT_TASK can_receive_thread;
-RT_TASK position_tracker; //This is going to directly send CAN communcations to set MoveToPosition
+RT_TASK rt_control_thread; //This is going to directly send CAN communcations to set MoveToPosition
 
 const int NUM_OF_DIGITS = 1;
 
@@ -99,6 +99,10 @@ dataRecording *playbackData = new dataRecording();
 std::string host;
 
 //---------------------------
+boost::condition_variable cv;
+boost::mutex mut;
+bool ready = false;
+
 bool going = true;
 bool displayOn = false;
 bool biotacInit = false;
@@ -660,7 +664,14 @@ double T_s_rtControlThreadDelay = 0.01;
 void rtControlThread(void *arg){
     
     rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_rtControlThreadDelay));
-                       
+    //std::cout << "cv.wait(lock)" << std::endl;
+    boost::unique_lock<boost::mutex> lock(mut);
+    while( !ready)
+    {
+        cv.wait(lock);
+    }
+    //std::cout << "cv.wait(lock) after!" << std::endl;
+    
     if(POSITIONCONTROL)
     {
         //----------- BAIRCLAW SIMPLE MOVE TO BE REMOVED LATER FOR ASU MARKING FILMING DAY
@@ -770,9 +781,12 @@ int main(int argc, char** argv) {
     //Creation and spinoff of RT_Threads (creates hard realtime thread)
     rt_task_create(&bt_record_thread, "btRecord", 0, 50, 0);
     rt_task_create(&can_receive_thread, "canReceive", 0, 51, 0);
+    rt_task_create(&rt_control_thread, "rtController",0, 52,0);
+    
 
     rt_task_start(&bt_record_thread, &biotacRecordThread, NULL);
     rt_task_start(&can_receive_thread, &canReceiveThread, NULL);
+    rt_task_start(&rt_control_thread, &rtControlThread, NULL);
 
 	// Create execution manager this sets the time per operate(period)
 	systems::RealTimeExecutionManager mem(0.005, 50);
@@ -820,8 +834,8 @@ int main(int argc, char** argv) {
 	getchar();
     
   
-    
-    
+    ready = true;
+    cv.notify_all();
     shouldStart = true;
     int j=0;
 
@@ -905,7 +919,8 @@ int main(int argc, char** argv) {
     std::cout << " bt_record_returned" << std::endl;
     rt_task_delete(&can_receive_thread);
     std::cout << " can_receive_returned" << std::endl;
-    
+    rt_task_delete(&rt_control_thread);
+    std::cout << " rt_control_returned" << std::endl;
  
 
     
