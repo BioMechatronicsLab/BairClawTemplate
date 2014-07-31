@@ -53,7 +53,7 @@
 #include "BairClawDataPlayBack.h"
 //BioTac REQUIRED
 //#include "cheetah.h"
-//#include "biotac.h"
+//#include "BCbiotac.h"
 // UDP loadCell Server REQUIRED
 #include <arpa/inet.h>
 #include <netinet/in.h>

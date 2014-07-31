@@ -141,7 +141,9 @@ void EPOS2::MoveToPosition(int pos, int controlWorld = 0){
 	data[7] = pos >> 24;
     
 	bus->send(node, data, len);
-	usleep(1000);
+	
+    // Execute target postion either in abs or relative mode
+    usleep(100);
 	data[0] = 0x22;
 	data[1] = 0x40;
 	data[2] = 0x60;
@@ -151,12 +153,11 @@ void EPOS2::MoveToPosition(int pos, int controlWorld = 0){
 	}else if( controlWorld == 1){
 		data[4] = 0x7f; //relative pos., start immediately
 	}
-	
 	data[5] = 0;
 	data[6] = 0;
 	data[7] = 0;
 	bus->send(node, data, len);
-	usleep(1000);
+
 	
 	return;
 }

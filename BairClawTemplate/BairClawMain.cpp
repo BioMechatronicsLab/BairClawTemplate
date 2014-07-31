@@ -23,6 +23,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <ctime>
+#include <time.h>
 
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
@@ -54,7 +55,7 @@
 #include "BairClawDataPlayBack.h"
 //BioTac REQUIRED
 #include "cheetah.h"
-#include "biotac.h"
+#include "BCbiotac.h"
 // UDP loadCell Server REQUIRED
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -62,8 +63,8 @@
 #include <sys/socket.h>
 
 #define DEBUG true
-#define POSITIONCONTROL false
-#define biotacOff true
+#define POSITIONCONTROL true
+#define biotacOff false
 
 
 using namespace barrett;
@@ -71,6 +72,7 @@ using systems::connect;
 
 RT_TASK bt_record_thread;
 RT_TASK can_receive_thread;
+RT_TASK position_tracker; //This is going to directly send CAN communcations to set MoveToPosition
 
 const int NUM_OF_DIGITS = 1;
 
@@ -659,7 +661,7 @@ int main(int argc, char** argv) {
     DHparams DHp;
     //------------------ FHN MERGER SUCCESS?
 
-    
+    /*// Jacobian and Matrix test
     DHp.calcT();
     int runNum = 1000000;
     VectorXd thetaUpdate(4);
@@ -684,7 +686,7 @@ int main(int argc, char** argv) {
     std::cout << DHp.jacobian << std::endl;
     std::cout << std::endl << "pinv(Jacobian) " << std::endl;
     std::cout << DHp.jacobianPseudoInverse << std::endl;
-    
+    */
     
     //make temp logging file info
     char tmpFile[] = "/tmp/btXXXXXX";
@@ -773,7 +775,7 @@ int main(int argc, char** argv) {
         bairClaw.digit[0].ADABmotor.ActivateCurrentMode(5000, MAXCURRENTALLOWED, 25000);
         bairClaw.digit[0].ADABmotor.enable();
     }else{
-        if(POSITIONCONTROL || argc >= 3)
+        if(POSITIONCONTROL)
         {
             bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
             bairClaw.digit[0].FEmotor.enable();
@@ -815,16 +817,16 @@ int main(int argc, char** argv) {
     {
         // Follow data2Track.bin
     }else{
-        if(POSITIONCONTROL || argc >= 3)
+        if(POSITIONCONTROL)
         {
             //----------- BAIRCLAW SIMPLE MOVE TO BE REMOVED LATER FOR ASU MARKING FILMING DAY
             //============================================================================================//
-            bairClaw.digit[0].FEmotor.SetCurrentLimit(250);
-            bairClaw.digit[0].FEmotor.SetPositionProfile(500,1000,1000);
+            bairClaw.digit[0].FEmotor.SetCurrentLimit(350);
+            bairClaw.digit[0].FEmotor.SetPositionProfile(1000,3500,3500);
             bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
             
-            bairClaw.digit[0].PIPmotor.SetCurrentLimit(250);
-            bairClaw.digit[0].PIPmotor.SetPositionProfile(500,1000,1000);
+            bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
+            bairClaw.digit[0].PIPmotor.SetPositionProfile(1000,3500,3500);
             bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
             
             
@@ -861,7 +863,7 @@ int main(int argc, char** argv) {
                     }
                     
                 }
-                usleep(5000);
+                usleep(5000 - 1000); // the minus 1000us is for the time the send the MoveToPosition command
                 //Track period of tapping
                 
             }
@@ -908,8 +910,21 @@ int main(int argc, char** argv) {
 	printf("Logging stopped.\n");
     
 	log::Reader<tuple_type> lr(tmpFile);
-	lr.exportCSV("testoutput.txt");
-	printf("Output written to %s.\n", "testoutput.txt");
+    //Add file time stamp
+    std::string fileName = "output_";
+    time_t nowR;
+    char timeNow[50];
+    timeNow[0] ='\0';
+    nowR = std::time(NULL);
+    if(nowR != -1)
+    {
+        strftime(timeNow, 50, "%m-%d-%Y_%H-%M", localtime(&nowR));
+        fileName.append(std::string(timeNow));
+        fileName.append(".csv");
+    }
+    
+	lr.exportCSV(fileName.c_str());
+	printf("Output written to %s.\n", fileName.c_str());
 	std::remove(tmpFile);
     
     std::cout << "About to print Period - ";

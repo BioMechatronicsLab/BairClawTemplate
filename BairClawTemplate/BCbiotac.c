@@ -47,7 +47,7 @@
 #endif
 
 #include "cheetah.h"
-#include "biotac.h"
+#include "BCbiotac.h"
 
 //=========================================================================
 // CONSTANTS
