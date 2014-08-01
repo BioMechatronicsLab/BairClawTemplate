@@ -65,7 +65,7 @@
 #include <sys/socket.h>
 
 #define DEBUG true
-#define POSITIONCONTROL false
+#define POSITIONCONTROL true
 #define biotacOff false
 
 
@@ -263,9 +263,9 @@ void displayThread()
             printf("Digit - [%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointPercent[0], bairClaw.digit[0].jointPercent[1], bairClaw.digit[0].jointPercent[2], bairClaw.digit[0].jointPercent[3]);
             printf("\nPress [Enter] to stop recording\n");
             
-            btsleep(0.1);
+            btsleep(0.05);
         }
-        btsleep(1);
+        btsleep(0.5);
     }
     
 }
@@ -664,24 +664,24 @@ double T_s_rtControlThreadDelay = 0.01;
 void rtControlThread(void *arg){
     
     rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_rtControlThreadDelay));
-    //std::cout << "cv.wait(lock)" << std::endl;
+    std::cout << "cv.wait(lock)" << std::endl;
     boost::unique_lock<boost::mutex> lock(mut);
     while( !ready)
     {
         cv.wait(lock);
+        rt_task_wait_period(NULL);
     }
-    //std::cout << "cv.wait(lock) after!" << std::endl;
     
     if(POSITIONCONTROL)
     {
         //----------- BAIRCLAW SIMPLE MOVE TO BE REMOVED LATER FOR ASU MARKING FILMING DAY
         //============================================================================================//
-        bairClaw.digit[0].FEmotor.SetCurrentLimit(350);
-        bairClaw.digit[0].FEmotor.SetPositionProfile(1000,3500,3500);
+        bairClaw.digit[0].FEmotor.SetCurrentLimit(300);
+        bairClaw.digit[0].FEmotor.SetPositionProfile(600,2500,2500);
         bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
         
-        bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
-        bairClaw.digit[0].PIPmotor.SetPositionProfile(1000,3500,3500);
+        bairClaw.digit[0].PIPmotor.SetCurrentLimit(300);
+        bairClaw.digit[0].PIPmotor.SetPositionProfile(600,2500,2500);
         bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
         
         
@@ -696,31 +696,32 @@ void rtControlThread(void *arg){
             changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
             changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
             if(count % 2 == 0)
+            {
                 bairClaw.digit[0].FEmotor.MoveToPosition(changeInMotorPosFE, 1);
+            }
             else
+            {
                 bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
-            
+            }
             count++;
-            /*
-             if(count % 5 == 0){ //if set to 1 does nothing just left in for quick changes
-             system("clear");
-             indexFinger.print();
-             printf("\nchangeInMotorPosFE = %6.2f, desiredPos = %4.2f, indexFinger.FEPercent = %4.2f count = %d\n",changeInMotorPosFE, desiredPos, indexFinger.FEPercent, count);
-             printf("\nchangeInMotorPosPD = %6.2f, desiredPos = %4.2f, PIPPercent+DIPPercent = %4.2f count = %d\n",changeInMotorPosPD, desiredPos, indexFinger.PIPPercent+indexFinger.DIPPercent, count);
-             }*/
+
             
             if(count % 100 == 0){
                 sw++;
                 if(sw % 2 == 0 ){
                     desiredPos = 30;
-                    desiredPosPIPDIP = 70;
+                    desiredPosPIPDIP = 150; //WAS 70
                 }else{
                     desiredPos = 5;
-                    desiredPosPIPDIP = 10;
+                    desiredPosPIPDIP = 30; //WAS 10
                 }
             }
+            
         }
     }
+    
+
+    
 }
 
 
@@ -833,14 +834,6 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 	getchar();
     
-  
-    ready = true;
-    cv.notify_all();
-    shouldStart = true;
-    int j=0;
-
-    
-    eoSys.setValue(jointInput);
     
     if (!DEBUG){
         bairClaw.digit[0].FEmotor.SetCurrentLimit(MAXCURRENTALLOWED);
@@ -860,10 +853,17 @@ int main(int argc, char** argv) {
             bairClaw.digit[0].PIPmotor.enable();
         }
     }
-    
  
     // Start loadCellRecordThread
-    boost::thread t(loadcellRecordThread), d(displayThread), BCMatlabVis(bairClawMatlabVisualizerSender);
+    boost::thread t(loadcellRecordThread), BCMatlabVis(bairClawMatlabVisualizerSender), d(displayThread);
+ 
+    
+    shouldStart = true;
+    int j=0;
+    
+    
+    eoSys.setValue(jointInput);
+
     
     //bairClaw.digit[0].setStaticFriction();
     printf(" Static setFriction complete MCP-F - %d MCP-E - %d \n Press [Enter] to start logging", bairClaw.digit[0].FEmotor.staticFrictionF, bairClaw.digit[0].FEmotor.staticFrictionE);
@@ -897,7 +897,8 @@ int main(int argc, char** argv) {
     
     }
     
-    
+    ready = true;
+    cv.notify_all();
     
     
     

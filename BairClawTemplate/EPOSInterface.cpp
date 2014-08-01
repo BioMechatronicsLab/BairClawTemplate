@@ -143,7 +143,7 @@ void EPOS2::MoveToPosition(int pos, int controlWorld = 0){
 	bus->send(node, data, len);
 	
     // Execute target postion either in abs or relative mode
-    usleep(100);
+    usleep(500);
 	data[0] = 0x22;
 	data[1] = 0x40;
 	data[2] = 0x60;
