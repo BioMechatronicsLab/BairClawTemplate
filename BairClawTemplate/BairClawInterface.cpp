@@ -80,17 +80,29 @@ void BCDigit::calcPercentage(){
 void BCDigit::calcJointAngles(){
     
     scaledJointVal[0] = ((jointVal[0] - 0.5000000000) / 0.7071067812);
-    jointValDeg[0] = ( 0.0000000000 * pow(scaledJointVal[0],2) ) + ( 0.7071067812 * pow(scaledJointVal[0],1) ) + ( 0.5000000000 * pow(scaledJointVal[0],0) );
+    jointValRad[0] = ( 0.0000000000 * pow(scaledJointVal[0],2) ) + ( 0.0123413415 * pow(scaledJointVal[0],1) ) + ( 0.0087266463 * pow(scaledJointVal[0],0) );
     //AdAbduction set to ZERO because not yet calibrated *******************************************************
-    jointValDeg[0] = 0;
+    jointValRad[0] = 0;
+    //----------------------------------------------------------------------------------------------------------
     scaledJointVal[1] = ((jointVal[1] - 751.0000000000) / 212.8138858252);
-    jointValDeg[1] = ( -1.9158678068 * pow(scaledJointVal[1],2) ) + ( -27.5322948607 * pow(scaledJointVal[1],1) ) + ( 51.7029936060 * pow(scaledJointVal[1],0) );
+    jointValRad[1] = ( -0.0334382013 * pow(scaledJointVal[1],2) ) + ( -0.4805291959 * pow(scaledJointVal[1],1) ) + ( 0.9023874716 * pow(scaledJointVal[1],0) );
     scaledJointVal[2] = ((jointVal[2] - 366.3750000000) / 293.5229061395);
-    jointValDeg[2] = ( -1.7749508464 * pow(scaledJointVal[2],2) ) + ( 24.5996263047 * pow(scaledJointVal[2],1) ) + ( 36.5530819906 * pow(scaledJointVal[2],0) );
+    jointValRad[2] = ( -0.0309787363 * pow(scaledJointVal[2],2) ) + ( 0.4293444738 * pow(scaledJointVal[2],1) ) + ( 0.6379716325 * pow(scaledJointVal[2],0) );
     scaledJointVal[3] = ((jointVal[3] - 748.3750000000) / 79.9677390309);
-    jointValDeg[3] = ( -5.4879315557 * pow(scaledJointVal[3],2) ) + ( -26.3204733439 * pow(scaledJointVal[3],1) ) + ( 39.8019401112 * pow(scaledJointVal[3],0) );
+    jointValRad[3] = ( -0.0957824748 * pow(scaledJointVal[3],2) ) + ( -0.4593789205 * pow(scaledJointVal[3],1) ) + ( 0.6946749036 * pow(scaledJointVal[3],0) );
+    
 }
 
+void BCDigit::calcDHparams(){
+    
+    DHp.theta << jointValRad[0], jointValRad[1], jointValRad[2], jointValRad[3];
+    DHp.calcT();
+    DHp.calcJacobian();
+    DHp.pinvJacobian();
+    
+    
+    
+}
 void BCDigit::vis(){
 	/*
      if(isInit)

@@ -237,6 +237,13 @@ protected:
         outputValue->setData(&count);
         jointsOutputValue->setData(&joints);
         
+        
+        bairClaw.digit[0].calcPercentage();
+        bairClaw.digit[0].calcJointAngles();
+        bairClaw.digit[0].calcTendonForce();
+        bairClaw.digit[0].calcDHparams(); //Will also clac jacobian and jacobian pseudo inverse
+        
+        
 	}
     
     
@@ -260,14 +267,17 @@ void displayThread()
             printf("AdAbset - %d, error - %d\n", bairClaw.digit[0].ADABmotor.currSetCount, bairClaw.digit[0].ADABmotor.currSetError);
             printf("Digit - [%d, %d, %d, %d]\n",bairClaw.digit[0].jointVal[0], bairClaw.digit[0].jointVal[1], bairClaw.digit[0].jointVal[2], bairClaw.digit[0].jointVal[3]);
             
-            
-            
-            bairClaw.digit[0].calcPercentage();
             printf("Digit JointPercent-\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointPercent[0], bairClaw.digit[0].jointPercent[1], bairClaw.digit[0].jointPercent[2], bairClaw.digit[0].jointPercent[3]);
-            bairClaw.digit[0].calcJointAngles();
-            printf("Digit JointAngle  -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointValDeg[0], bairClaw.digit[0].jointValDeg[1], bairClaw.digit[0].jointValDeg[2], bairClaw.digit[0].jointValDeg[3]);
-            bairClaw.digit[0].calcTendonForce();
+            printf("Digit JointAngleRad  -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointValRad[0], bairClaw.digit[0].jointValRad[1], bairClaw.digit[0].jointValRad[2], bairClaw.digit[0].jointValRad[3]);
             printf("Digit TendonForce -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].mcpFest, bairClaw.digit[0].mcpEest, bairClaw.digit[0].pipFest, bairClaw.digit[0].pipEest);
+            
+            std::cout << "Jacobian" << std::endl << std::endl << std::endl;
+            std::cout << std::setprecision(5) << std::fixed << bairClaw.digit[0].DHp.jacobian << std::endl;
+            
+            std::cout << "pinvJacobian()" << std::endl << std::endl;
+            std::cout << bairClaw.digit[0].DHp.jacobianPseudoInverse << std::endl;
+            
+            
             printf("\nPress [Enter] to stop recording\n");
             
             btsleep(0.05);

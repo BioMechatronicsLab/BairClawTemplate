@@ -45,125 +45,15 @@ namespace barrett{
     
 template <typename DerivedA, typename DerivedB>
 void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T);
-    
-
-    
-
-#pragma mark - BCDigit
-class BCDigit {
-	int setCounter;
-	int JointShutOffRange;
-public:
-	EPOS2 FEmotor, PIPmotor, ADABmotor;
-    int node;
-	bool isInit;
-	int adab, fe, pip, dip;
-    int jointVal[4];
-    double jointPercent[4], jointValDeg[4], scaledJointVal[4];
-	int ADABmin, FEmin, PIPmin, DIPmin;
-	int ADABmax, FEmax, PIPmax, DIPmax;
-	double ADABRange, FERange, PIPRange, DIPRange;
-    double mcpFest, mcpEest, pipFest, pipEest, mcpFestOffset, mcpEestOffset, pipFestOffset, pipEestOffset;
-	
-    
-    std::string description; //assined to BCdigit as a descrpiter
-
-    // Static member variables & functions //
-    static MCPActuationRadius mcpActuationRadius;
-    
-    // Constructor. Minimal error checking be carefule and make sure you
-    // know what you are doing!!
-	BCDigit(int node, const bus::CANSocket* busSet): FEmotor( node, busSet), PIPmotor( node+1, busSet), ADABmotor( node+2, busSet), node(node)
-	{
-		adab = 0; ADABmin = 18 ; ADABmax = 1020;
-		fe   = 0; FEmin   = 480; FEmax   = 1021;
-		pip  = 0; PIPmin  = 2  ; PIPmax  = 790;
-		dip  = 0; DIPmin  = 611; DIPmax  = 832;
-		setCounter = 0;
-		isInit = 0;
-		JointShutOffRange = 5;
-		
-        
-        //Initialize tendonForce Variables
-        mcpFest = 0; mcpEest = 0; pipFest = 0; pipEest = 0;
-        mcpFestOffset = 0; mcpEestOffset = 0; pipFestOffset = 0; pipEestOffset = 0;
-    
-        
-	}
-    
-    /** \returns No return set jointVal[] property of class BCDigit
-     *  \note needs to be called each time CAN dat frame is recieved to set data[8] to joint values
-     */
-	void set(unsigned char data[]){
-		jointVal[0] = data[0] + (data[1] << 8);
-		jointVal[1] = data[2] + (data[3] << 8);
-		jointVal[2] = data[4] + (data[5] << 8);
-		jointVal[3] = data[6] + (data[7] << 8);
-	}
-    void setTendonForceOffset();
-    void calcTendonForce();
-	void init();
-	void vis ();
-	void calcPercentage();
-    void calcJointAngles();
-	void setStaticFriction();
-	void backDrive();
-    
-    
-	/*
-     int  limitsOk(){
-     
-     int limit=1;
-     if( (AdAb > AdAbmax-JointShutOffRange) || (AdAb < AdAbmin+JointShutOffRange) ){
-     limit =0;
-     }else if( (FE > FEmax-JointShutOffRange) || (FE < FEmin+JointShutOffRange) ){
-     limit =0;
-     }else if( (PIP < PIPmin+JointShutOffRange) && (DIP > DIPmax-JointShutOffRange) ){
-     limit =0;
-     }else if( (PIP > PIPmax-JointShutOffRange) && (DIP < DIPmin+JointShutOffRange) ){
-     limit =0;
-     }
-     return limit;
-     } */
-	void print(){
-        std::cout << description << std::endl;
-	}
-};
-
-
-#pragma mark - BCHand
-/**
- * \desc BCHand uses BCDigit to build a reference to complete hand. It also inherets from EPOS interface.
- */ 
-class BCHand
-{
-public:
-    std::vector<BCDigit> digit; //BCDigitPointer
-    std::string name;
-
-    
-    BCHand(int NumberOfDigits, const bus::CANSocket* busSet, int startingNode=1)
-    {
-        for( int i=0; i<startingNode; i++ )
-        {
-            digit.push_back(BCDigit(startingNode+i, busSet));
-        }
-        
-    }
-    void print(); //Displays bairclaw data on screen at ~10Hz not to be called from a realtime thread! 
-    
-};
 
     
 #pragma mark - BioMechMatrixManip
-    
-    
 #define NUM_LINKS       4
 #define LINK_1          0.0422
 #define LINK_1_OFFSET  -0.0128
 #define LINK_2          0.0318
 #define LINK_3          0.0200
-
+    
 class DHparams
 {
 public: //remove later once debuging
@@ -206,19 +96,13 @@ public:
     /**
      * Computes all transformation matrices from the updated theat(input)
      */
-    void calcT(VectorXd thetaUpdate)
+    void calcT()
     {
-        theta = thetaUpdate;
+        
         for(int i=0; i<NUM_LINKS; i++)
         {
-            DH[i](3) = thetaUpdate(i);
+            DH[i](3) = theta(i);
         }
-        calcT();
-    }
-    /**
-     * Computes all transformation matrices from the current theta values
-     */
-    void calcT(){
         
         for(int i=0; i<NUM_LINKS; i++)
         {//computes tranformation matrices from DH paramters
@@ -282,7 +166,113 @@ public:
         
     }
 };
-  
+    
+
+#pragma mark - BCDigit
+class BCDigit {
+	int setCounter;
+	int JointShutOffRange;
+public:
+	EPOS2 FEmotor, PIPmotor, ADABmotor;
+    int node;
+	bool isInit;
+	int adab, fe, pip, dip;
+    int jointVal[4];
+    double jointPercent[4], jointValRad[4], scaledJointVal[4];
+	int ADABmin, FEmin, PIPmin, DIPmin;
+	int ADABmax, FEmax, PIPmax, DIPmax;
+	double ADABRange, FERange, PIPRange, DIPRange;
+    double mcpFest, mcpEest, pipFest, pipEest, mcpFestOffset, mcpEestOffset, pipFestOffset, pipEestOffset;
+    std::string description; //assined to BCdigit as a descrpiter
+    DHparams DHp;
+    // Static member variables & functions //
+    static MCPActuationRadius mcpActuationRadius;
+    
+    // Constructor. Minimal error checking be carefule and make sure you
+    // know what you are doing!!
+	BCDigit(int node, const bus::CANSocket* busSet): FEmotor( node, busSet), PIPmotor( node+1, busSet), ADABmotor( node+2, busSet), node(node)
+	{
+		adab = 0; ADABmin = 18 ; ADABmax = 1020;
+		fe   = 0; FEmin   = 480; FEmax   = 1021;
+		pip  = 0; PIPmin  = 2  ; PIPmax  = 790;
+		dip  = 0; DIPmin  = 611; DIPmax  = 832;
+		setCounter = 0;
+		isInit = 0;
+		JointShutOffRange = 5;
+		
+        
+        //Initialize tendonForce Variables
+        mcpFest = 0; mcpEest = 0; pipFest = 0; pipEest = 0;
+        mcpFestOffset = 0; mcpEestOffset = 0; pipFestOffset = 0; pipEestOffset = 0;
+        description = "this is a bairClawDigit object";
+        
+	}
+    
+    /** \returns No return set jointVal[] property of class BCDigit
+     *  \note needs to be called each time CAN dat frame is recieved to set data[8] to joint values
+     */
+	void set(unsigned char data[]){
+		jointVal[0] = data[0] + (data[1] << 8);
+		jointVal[1] = data[2] + (data[3] << 8);
+		jointVal[2] = data[4] + (data[5] << 8);
+		jointVal[3] = data[6] + (data[7] << 8);
+	}
+    void setTendonForceOffset();
+    void calcTendonForce();
+	void init();
+	void vis ();
+	void calcPercentage();
+    void calcJointAngles();
+    void calcDHparams();
+	void setStaticFriction();
+	void backDrive();
+    
+    
+	/*
+     int  limitsOk(){
+     
+     int limit=1;
+     if( (AdAb > AdAbmax-JointShutOffRange) || (AdAb < AdAbmin+JointShutOffRange) ){
+     limit =0;
+     }else if( (FE > FEmax-JointShutOffRange) || (FE < FEmin+JointShutOffRange) ){
+     limit =0;
+     }else if( (PIP < PIPmin+JointShutOffRange) && (DIP > DIPmax-JointShutOffRange) ){
+     limit =0;
+     }else if( (PIP > PIPmax-JointShutOffRange) && (DIP < DIPmin+JointShutOffRange) ){
+     limit =0;
+     }
+     return limit;
+     } */
+	void print(){
+        std::cout << description << std::endl;
+	}
+};
+
+
+#pragma mark - BCHand
+/**
+ * \desc BCHand uses BCDigit to build a reference to complete hand. It also inherets from EPOS interface.
+ */ 
+class BCHand
+{
+public:
+    std::vector<BCDigit> digit; //BCDigitPointer
+    std::string name;
+
+    
+    BCHand(int NumberOfDigits, const bus::CANSocket* busSet, int startingNode=1)
+    {
+        for( int i=0; i<startingNode; i++ )
+        {
+            digit.push_back(BCDigit(startingNode+i, busSet));
+        }
+        
+    }
+    void print(); //Displays bairclaw data on screen at ~10Hz not to be called from a realtime thread! 
+    
+};
+
+    
 template <typename DerivedA, typename DerivedB>
 void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T)
 {
