@@ -1,5 +1,6 @@
 
 #include "BairClawInterface.h"
+#include <math.h>
 
 namespace barrett {
 
@@ -11,7 +12,6 @@ namespace barrett {
 
 void BCInitThread( BCDigit* digit, const bool* initgoing) {
     
-	int thrdCnt = 0;
 	char input;
 	system("clear");
 	printf("\nWould you like to run initialization? [y or n (use default ranges) ]: \n");
@@ -72,7 +72,21 @@ void BCDigit::calcPercentage(){
      jointPercent[1] =    ( ((double)FERange   - ((double)jointVal[1]   - (double)FEmin))   / (double)FERange )   *100;
      jointPercent[2] =  100 - ( ((double)PIPRange  - ((double)jointVal[2]  - (double)PIPmin))  / (double)PIPRange )  *100;
      jointPercent[3] =   ( ((double)DIPRange  - ((double)jointVal[3]  - (double)DIPmin))  / (double)DIPRange )  *100;
-     
+ 
+     //Tie percentages and joint angles together for debuging purposes.
+     calcJointAngles();
+}
+    
+void BCDigit::calcJointAngles(){
+    
+    scaledJointVal[0] = ((jointVal[0] - 0.5000000000) / 0.7071067812);
+    jointValDeg[0] = ( 0.0000000000 * pow(scaledJointVal[0],2) ) + ( 0.7071067812 * pow(scaledJointVal[0],1) ) + ( 0.5000000000 * pow(scaledJointVal[0],0) );
+    scaledJointVal[1] = ((jointVal[1] - 751.0000000000) / 212.8138858252);
+    jointValDeg[1] = ( -1.9158678068 * pow(scaledJointVal[1],2) ) + ( -27.5322948607 * pow(scaledJointVal[1],1) ) + ( 51.7029936060 * pow(scaledJointVal[1],0) );
+    scaledJointVal[2] = ((jointVal[2] - 366.3750000000) / 293.5229061395);
+    jointValDeg[2] = ( -1.7749508464 * pow(scaledJointVal[2],2) ) + ( 24.5996263047 * pow(scaledJointVal[2],1) ) + ( 36.5530819906 * pow(scaledJointVal[2],0) );
+    scaledJointVal[3] = ((jointVal[3] - 748.3750000000) / 79.9677390309);
+    jointValDeg[3] = ( -5.4879315557 * pow(scaledJointVal[3],2) ) + ( -26.3204733439 * pow(scaledJointVal[3],1) ) + ( 39.8019401112 * pow(scaledJointVal[3],0) );
 }
 
 void BCDigit::vis(){

@@ -59,7 +59,7 @@ public:
 	bool isInit;
 	int adab, fe, pip, dip;
     int jointVal[4];
-    double jointPercent[4];
+    double jointPercent[4], jointValDeg[4], scaledJointVal[4];
 	int ADABmin, FEmin, PIPmin, DIPmin;
 	int ADABmax, FEmax, PIPmax, DIPmax;
 	double ADABRange, FERange, PIPRange, DIPRange;
@@ -105,6 +105,7 @@ public:
 	void init();
 	void vis ();
 	void calcPercentage();
+    void calcJointAngles();
 	void setStaticFriction();
 	void backDrive();
     

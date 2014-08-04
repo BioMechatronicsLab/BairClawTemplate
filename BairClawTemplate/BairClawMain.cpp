@@ -65,7 +65,7 @@
 #include <sys/socket.h>
 
 #define DEBUG true
-#define POSITIONCONTROL true
+#define POSITIONCONTROL false
 #define biotacOff false
 
 
@@ -261,6 +261,7 @@ void displayThread()
             printf("Digit - [%d, %d, %d, %d]\n",bairClaw.digit[0].jointVal[0], bairClaw.digit[0].jointVal[1], bairClaw.digit[0].jointVal[2], bairClaw.digit[0].jointVal[3]);
             bairClaw.digit[0].calcPercentage();
             printf("Digit - [%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointPercent[0], bairClaw.digit[0].jointPercent[1], bairClaw.digit[0].jointPercent[2], bairClaw.digit[0].jointPercent[3]);
+            printf("Digit - [%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointValDeg[0], bairClaw.digit[0].jointValDeg[1], bairClaw.digit[0].jointValDeg[2], bairClaw.digit[0].jointValDeg[3]);
             printf("\nPress [Enter] to stop recording\n");
             
             btsleep(0.05);
