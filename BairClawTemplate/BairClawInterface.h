@@ -64,7 +64,7 @@ public:
 	int ADABmax, FEmax, PIPmax, DIPmax;
 	double ADABRange, FERange, PIPRange, DIPRange;
     double mcpFest, mcpEest, pipFest, pipEest, mcpFestOffset, mcpEestOffset, pipFestOffset, pipEestOffset;
-	int normalRotation;     //used to determine is flextion is pos mA. Set to neg(-) if flipped
+	
     
     std::string description; //assined to BCdigit as a descrpiter
 
@@ -82,7 +82,7 @@ public:
 		setCounter = 0;
 		isInit = 0;
 		JointShutOffRange = 5;
-		normalRotation = 0; //Default to normal rotation (+) mA for flextion
+		
         
         //Initialize tendonForce Variables
         mcpFest = 0; mcpEest = 0; pipFest = 0; pipEest = 0;

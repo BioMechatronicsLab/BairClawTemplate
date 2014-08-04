@@ -81,6 +81,8 @@ void BCDigit::calcJointAngles(){
     
     scaledJointVal[0] = ((jointVal[0] - 0.5000000000) / 0.7071067812);
     jointValDeg[0] = ( 0.0000000000 * pow(scaledJointVal[0],2) ) + ( 0.7071067812 * pow(scaledJointVal[0],1) ) + ( 0.5000000000 * pow(scaledJointVal[0],0) );
+    //AdAbduction set to ZERO because not yet calibrated *******************************************************
+    jointValDeg[0] = 0;
     scaledJointVal[1] = ((jointVal[1] - 751.0000000000) / 212.8138858252);
     jointValDeg[1] = ( -1.9158678068 * pow(scaledJointVal[1],2) ) + ( -27.5322948607 * pow(scaledJointVal[1],1) ) + ( 51.7029936060 * pow(scaledJointVal[1],0) );
     scaledJointVal[2] = ((jointVal[2] - 366.3750000000) / 293.5229061395);

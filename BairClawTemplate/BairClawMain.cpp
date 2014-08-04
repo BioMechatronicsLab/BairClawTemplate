@@ -259,9 +259,15 @@ void displayThread()
             printf("PIPset  - %d, error - %d\n", bairClaw.digit[0].PIPmotor.currSetCount, bairClaw.digit[0].PIPmotor.currSetError);
             printf("AdAbset - %d, error - %d\n", bairClaw.digit[0].ADABmotor.currSetCount, bairClaw.digit[0].ADABmotor.currSetError);
             printf("Digit - [%d, %d, %d, %d]\n",bairClaw.digit[0].jointVal[0], bairClaw.digit[0].jointVal[1], bairClaw.digit[0].jointVal[2], bairClaw.digit[0].jointVal[3]);
+            
+            
+            
             bairClaw.digit[0].calcPercentage();
-            printf("Digit - [%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointPercent[0], bairClaw.digit[0].jointPercent[1], bairClaw.digit[0].jointPercent[2], bairClaw.digit[0].jointPercent[3]);
-            printf("Digit - [%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointValDeg[0], bairClaw.digit[0].jointValDeg[1], bairClaw.digit[0].jointValDeg[2], bairClaw.digit[0].jointValDeg[3]);
+            printf("Digit JointPercent-\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointPercent[0], bairClaw.digit[0].jointPercent[1], bairClaw.digit[0].jointPercent[2], bairClaw.digit[0].jointPercent[3]);
+            bairClaw.digit[0].calcJointAngles();
+            printf("Digit JointAngle  -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointValDeg[0], bairClaw.digit[0].jointValDeg[1], bairClaw.digit[0].jointValDeg[2], bairClaw.digit[0].jointValDeg[3]);
+            bairClaw.digit[0].calcTendonForce();
+            printf("Digit TendonForce -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].mcpFest, bairClaw.digit[0].mcpEest, bairClaw.digit[0].pipFest, bairClaw.digit[0].pipEest);
             printf("\nPress [Enter] to stop recording\n");
             
             btsleep(0.05);
@@ -675,6 +681,17 @@ void rtControlThread(void *arg){
     
     if(POSITIONCONTROL)
     {
+        bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
+        bairClaw.digit[0].FEmotor.enable();
+        bairClaw.digit[0].ADABmotor.ActivateProfilePositionMode();
+        bairClaw.digit[0].ADABmotor.enable();
+        bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
+        bairClaw.digit[0].PIPmotor.enable();
+    }
+
+    
+    if(POSITIONCONTROL)
+    {
         //----------- BAIRCLAW SIMPLE MOVE TO BE REMOVED LATER FOR ASU MARKING FILMING DAY
         //============================================================================================//
         bairClaw.digit[0].FEmotor.SetCurrentLimit(300);
@@ -732,10 +749,9 @@ void rtControlThread(void *arg){
 int main(int argc, char** argv) {
     mlockall(MCL_CURRENT|MCL_FUTURE);/* Avoids memory swapping for this program */
     
+    /*//------------------ FHN MERGER SUCCESS?
     DHparams DHp;
-    //------------------ FHN MERGER SUCCESS?
-
-    /*// Jacobian and Matrix test
+    // Jacobian and Matrix test---------------------------------------------------------
     DHp.calcT();
     int runNum = 1000000;
     VectorXd thetaUpdate(4);
@@ -760,7 +776,7 @@ int main(int argc, char** argv) {
     std::cout << DHp.jacobian << std::endl;
     std::cout << std::endl << "pinv(Jacobian) " << std::endl;
     std::cout << DHp.jacobianPseudoInverse << std::endl;
-    */
+    //-----------------------------------------------------------------------------------*/
     
     //make temp logging file info
     char tmpFile[] = "/tmp/btXXXXXX";
@@ -844,15 +860,7 @@ int main(int argc, char** argv) {
         bairClaw.digit[0].ADABmotor.ActivateCurrentMode(5000, MAXCURRENTALLOWED, 25000);
         bairClaw.digit[0].ADABmotor.enable();
     }else{
-        if(POSITIONCONTROL)
-        {
-            bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
-            bairClaw.digit[0].FEmotor.enable();
-            bairClaw.digit[0].ADABmotor.ActivateProfilePositionMode();
-            bairClaw.digit[0].ADABmotor.enable();
-            bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
-            bairClaw.digit[0].PIPmotor.enable();
-        }
+
     }
  
     // Start loadCellRecordThread
