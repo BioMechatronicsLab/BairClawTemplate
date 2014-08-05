@@ -179,6 +179,7 @@ public: //remove later once debuging
         }
         jacobianTransposePseudoInverse = (svd.matrixV() * singularValuesM.asDiagonal() * svd.matrixU().transpose());
         
+        
     }
     
 };

@@ -241,7 +241,7 @@ protected:
         bairClaw.digit[0].calcPercentage();
         bairClaw.digit[0].calcJointAngles();
         bairClaw.digit[0].calcTendonForce();
-        bairClaw.digit[0].calcDHparams(); //Will also clac jacobian and jacobian pseudo inverse
+        bairClaw.digit[0].calcDHparams(); //Will also clac jacobian, pinv(jacobian') and end effoctor force
         
         
 	}
