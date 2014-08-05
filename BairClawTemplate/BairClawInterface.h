@@ -14,6 +14,7 @@
 #include <vector>
 #include <string>
 #include <cstdio>
+#include <math.h>
 
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
@@ -31,11 +32,11 @@
 #include <barrett/products/product_manager.h>
 
 #include "EPOSInterface.h" //EPOS control outside of digit control
-#include "BairClawActuationJ.h" //used to determine moment arms for BairClawMCP
+
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-//#include <Eigen/SVD>
+
 
 
 
@@ -53,6 +54,11 @@ void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T);
 #define LINK_1_OFFSET  -0.0128
 #define LINK_2          0.0318
 #define LINK_3          0.0200
+#define PULLEY_1        0.019050
+#define PULLEY_2        100 //changes based on theta to be reassigned
+#define PULLEY_3        0.012446
+#define PULLEY_4        0.006350
+    
     
 class DHparams
 {
@@ -62,20 +68,22 @@ public: //remove later once debuging
     /**
      * jacobianPseudoInvers null until calcJacobian and pinvJacobian are called
      */
-    MatrixXd jacobianPseudoInverse;
-    
-public:
+    MatrixXd jacobianTransposePseudoInverse;
+    MatrixXd jacobianActuation;
     std::vector<MatrixXd> transformationMatrixBetweenLink;
     std::vector<MatrixXd> transformationMatrixToGlobal;
     
     std::vector<VectorXd> DH;
+
     
     DHparams()
     {
         jacobian.resize(6,NUM_LINKS);
         jacobian.Zero(6,NUM_LINKS);
-        jacobianPseudoInverse.resize(NUM_LINKS,6);
-        jacobianPseudoInverse.Zero(NUM_LINKS,6);
+        jacobianTransposePseudoInverse.resize(6, NUM_LINKS);
+        jacobianTransposePseudoInverse.Zero(6, NUM_LINKS);
+        jacobianActuation.resize(NUM_LINKS, 6);
+        jacobianActuation.Zero(NUM_LINKS, 6);
         theta.resize(4);
         theta << 0,0,0,0;
         theta(0) = 1.3;
@@ -90,6 +98,13 @@ public:
         DH[1] << LINK_1,        0, LINK_1_OFFSET, theta(1);
         DH[2] << LINK_2,        0,             0, theta(2);
         DH[3] << LINK_3,        0,             0, theta(3);
+        
+        jacobianActuation <<
+            PULLEY_1, -PULLEY_1,        0,        0,        0,        0,
+                   0,         0, PULLEY_2,-PULLEY_2,        0,        0,
+                   0,         0,        0,        0, PULLEY_3,-PULLEY_3,
+                   0,         0,        0,        0, PULLEY_4,-PULLEY_4;
+        
         
     }
     
@@ -150,11 +165,11 @@ public:
         }
     }
     
-    void pinvJacobian()
+    void pinvJacobianTrans()
     {
         static const double  pinvtoler=1.0e-6; // choose your tolerance wisely!
         VectorXd singularValuesM(NUM_LINKS);
-        JacobiSVD<MatrixXd> svd(jacobian, ComputeThinU | ComputeThinV);
+        JacobiSVD<MatrixXd> svd(jacobian.transpose(), ComputeThinU | ComputeThinV);
         
         for(int i=0; i<NUM_LINKS; i++)
         {
@@ -162,9 +177,10 @@ public:
                 singularValuesM(i)= 1.0/svd.singularValues()(i);
             else singularValuesM(i)=0;
         }
-        jacobianPseudoInverse = (svd.matrixV() * singularValuesM.asDiagonal() * svd.matrixU().transpose());
+        jacobianTransposePseudoInverse = (svd.matrixV() * singularValuesM.asDiagonal() * svd.matrixU().transpose());
         
     }
+    
 };
     
 
@@ -183,10 +199,13 @@ public:
 	int ADABmax, FEmax, PIPmax, DIPmax;
 	double ADABRange, FERange, PIPRange, DIPRange;
     double mcpFest, mcpEest, pipFest, pipEest, mcpFestOffset, mcpEestOffset, pipFestOffset, pipEestOffset;
+    double mcpScaledRadiusE, mcpJointRadiusE, mcpScaledRadiusF, mcpJointRadiusF;
     std::string description; //assined to BCdigit as a descrpiter
     DHparams DHp;
     // Static member variables & functions //
-    static MCPActuationRadius mcpActuationRadius;
+
+    
+
     
     // Constructor. Minimal error checking be carefule and make sure you
     // know what you are doing!!
@@ -204,7 +223,9 @@ public:
         //Initialize tendonForce Variables
         mcpFest = 0; mcpEest = 0; pipFest = 0; pipEest = 0;
         mcpFestOffset = 0; mcpEestOffset = 0; pipFestOffset = 0; pipEestOffset = 0;
+        mcpScaledRadiusE = 0; mcpJointRadiusE = 0; mcpScaledRadiusF = 0; mcpJointRadiusF = 0;
         description = "this is a bairClawDigit object";
+        
         
 	}
     
@@ -219,6 +240,7 @@ public:
 	}
     void setTendonForceOffset();
     void calcTendonForce();
+    void calcJacobianActuation();
 	void init();
 	void vis ();
 	void calcPercentage();

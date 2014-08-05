@@ -274,13 +274,20 @@ void displayThread()
             std::cout << "Jacobian" << std::endl << std::endl << std::endl;
             std::cout << std::setprecision(5) << std::fixed << bairClaw.digit[0].DHp.jacobian << std::endl;
             
-            std::cout << "pinvJacobian()" << std::endl << std::endl;
-            std::cout << bairClaw.digit[0].DHp.jacobianPseudoInverse << std::endl;
+            std::cout << "jacobianTransposePseudoInverse()" << std::endl << std::endl;
+            std::cout << bairClaw.digit[0].DHp.jacobianTransposePseudoInverse << std::endl;
             
+            std::cout << "jacobianActuation" << std::endl;
+            bairClaw.digit[0].calcJacobianActuation();
+            std::cout << bairClaw.digit[0].DHp.jacobianActuation << std::endl;
+            //std::cout << "MCP_joint" << bairClaw.digit[0].jointValRad[1] << std::endl;
+            
+            std::cout << " jointValRad[0] in deg = " << ( (180/M_PI) * bairClaw.digit[0].jointValRad[1]) << std::endl;
+
             
             printf("\nPress [Enter] to stop recording\n");
             
-            btsleep(0.05);
+            btsleep(0.1);
         }
         btsleep(0.5);
     }

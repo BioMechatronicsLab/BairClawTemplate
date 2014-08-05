@@ -51,6 +51,33 @@ void BCDigit::calcTendonForce()
     
 }
     
+void BCDigit::calcJacobianActuation()
+{
+
+    if( (jointValRad[1]*(180/M_PI)) <   15)
+    {
+        mcpScaledRadiusE = (( (jointValRad[1]*(180/M_PI)) - -2.5000000000) / 12.2474487139);
+        mcpJointRadiusE = ( 0.0000422017 * pow(mcpScaledRadiusE,3) ) + ( -0.0001427911 * pow(mcpScaledRadiusE,2) ) + ( -0.0003308749 * pow(mcpScaledRadiusE,1) ) + ( 0.0100116810 * pow(mcpScaledRadiusE,0) );
+    }
+    else
+    {
+        mcpScaledRadiusE = (( (jointValRad[1]*(180/M_PI)) - 52.5000000000) / 23.8047614285);
+        mcpJointRadiusE = ( 0.0000869093 * pow(mcpScaledRadiusE,3) ) + ( -0.0004046143 * pow(mcpScaledRadiusE,2) ) + ( -0.0011856969 * pow(mcpScaledRadiusE,1) ) + ( 0.0088798494 * pow(mcpScaledRadiusE,0) );
+    }
+    if( (jointValRad[1]*(180/M_PI)) <   25)
+    {
+        mcpScaledRadiusF = (( (jointValRad[1]*(180/M_PI)) - 2.5000000000) / 15.1382517705);
+        mcpJointRadiusF= ( -0.0000462686 * pow(mcpScaledRadiusF,3) ) + ( -0.0002187015 * pow(mcpScaledRadiusF,2) ) + ( 0.0003988968 * pow(mcpScaledRadiusF,1) ) + ( 0.0094403190 * pow(mcpScaledRadiusF,0) );
+    }
+    else
+    {
+        mcpScaledRadiusF = (( (jointValRad[1]*(180/M_PI)) - 57.5000000000) / 20.9165006634);
+        mcpJointRadiusF = ( -0.0001741799 * pow(mcpScaledRadiusF,5) ) + ( -0.0004295531 * pow(mcpScaledRadiusF,4) ) + ( -0.0004321000 * pow(mcpScaledRadiusF,3) ) + ( -0.0007281876 * pow(mcpScaledRadiusF,2) ) + ( -0.0002048097 * pow(mcpScaledRadiusF,1) ) + ( 0.0101367815 * pow(mcpScaledRadiusF,0) );
+    }
+    DHp.jacobianActuation(1,2) = mcpJointRadiusF;
+    DHp.jacobianActuation(1,3) = -mcpJointRadiusE;
+}
+    
 void BCDigit::init(){
     bool initgoing = 1;
     printf("About to start init thread ");
@@ -80,17 +107,15 @@ void BCDigit::calcPercentage(){
 void BCDigit::calcJointAngles(){
     
     scaledJointVal[0] = ((jointVal[0] - 0.5000000000) / 0.7071067812);
-    jointValRad[0] = ( 0.0000000000 * pow(scaledJointVal[0],2) ) + ( 0.0123413415 * pow(scaledJointVal[0],1) ) + ( 0.0087266463 * pow(scaledJointVal[0],0) );
+    jointValRad[0] = ( 0.0000000000 * pow(scaledJointVal[0],4) ) + ( 0.0000000000 * pow(scaledJointVal[0],3) ) + ( 0.0000000000 * pow(scaledJointVal[0],2) ) + ( 0.0123413415 * pow(scaledJointVal[0],1) ) + ( 0.0087266463 * pow(scaledJointVal[0],0) );
     //AdAbduction set to ZERO because not yet calibrated *******************************************************
     jointValRad[0] = 0;
-    //----------------------------------------------------------------------------------------------------------
     scaledJointVal[1] = ((jointVal[1] - 751.0000000000) / 212.8138858252);
-    jointValRad[1] = ( -0.0334382013 * pow(scaledJointVal[1],2) ) + ( -0.4805291959 * pow(scaledJointVal[1],1) ) + ( 0.9023874716 * pow(scaledJointVal[1],0) );
+    jointValRad[1] = ( -0.0348243796 * pow(scaledJointVal[1],4) ) + ( -0.0742307570 * pow(scaledJointVal[1],3) ) + ( 0.0147427679 * pow(scaledJointVal[1],2) ) + ( -0.3832364401 * pow(scaledJointVal[1],1) ) + ( 0.8952705639 * pow(scaledJointVal[1],0) );
     scaledJointVal[2] = ((jointVal[2] - 366.3750000000) / 293.5229061395);
-    jointValRad[2] = ( -0.0309787363 * pow(scaledJointVal[2],2) ) + ( 0.4293444738 * pow(scaledJointVal[2],1) ) + ( 0.6379716325 * pow(scaledJointVal[2],0) );
+    jointValRad[2] = ( -0.0254189471 * pow(scaledJointVal[2],4) ) + ( 0.0823974499 * pow(scaledJointVal[2],3) ) + ( -0.0038441207 * pow(scaledJointVal[2],2) ) + ( 0.3224575594 * pow(scaledJointVal[2],1) ) + ( 0.6355146797 * pow(scaledJointVal[2],0) );
     scaledJointVal[3] = ((jointVal[3] - 748.3750000000) / 79.9677390309);
-    jointValRad[3] = ( -0.0957824748 * pow(scaledJointVal[3],2) ) + ( -0.4593789205 * pow(scaledJointVal[3],1) ) + ( 0.6946749036 * pow(scaledJointVal[3],0) );
-    
+    jointValRad[3] = ( -0.0703793344 * pow(scaledJointVal[3],4) ) + ( -0.1606000938 * pow(scaledJointVal[3],3) ) + ( -0.0562508357 * pow(scaledJointVal[3],2) ) + ( -0.2914736187 * pow(scaledJointVal[3],1) ) + ( 0.6969941865 * pow(scaledJointVal[3],0) );
 }
 
 void BCDigit::calcDHparams(){
@@ -98,10 +123,9 @@ void BCDigit::calcDHparams(){
     DHp.theta << jointValRad[0], jointValRad[1], jointValRad[2], jointValRad[3];
     DHp.calcT();
     DHp.calcJacobian();
-    DHp.pinvJacobian();
+    DHp.pinvJacobianTrans();
     
-    
-    
+
 }
 void BCDigit::vis(){
 	/*
