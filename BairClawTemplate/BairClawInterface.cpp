@@ -1,5 +1,6 @@
 
 #include "BairClawInterface.h"
+#include <barrett/os.h>  // For btsleep()
 #include <math.h>
 
 namespace barrett {
@@ -32,10 +33,29 @@ void BairClawVisThread( BCDigit* digit, const bool* visgoing) {
 void BCDigit::setTendonForceOffset()
 {
     //Models fit it matlab then copied into program
-    mcpFestOffset = 0.009806*(-5.971124e+02 + (+8.402597e-01 * FEmotor.A2) + (-4.617917e-02 * FEmotor.A1) + (-1.800978e-02 * PIPmotor.A2) + (-5.823183e-02 * PIPmotor.A1));
-    mcpEestOffset = 0.009806*(-1.753974e+03 + (-1.241008e-02 * FEmotor.A2) + (+2.670576e+00 * FEmotor.A1) + (-3.922166e-02 * PIPmotor.A2) + (-1.786393e-01 * PIPmotor.A1));
-    pipFestOffset = 0.009806*(-8.943469e+02 + (-3.292929e-02 * FEmotor.A2) + (-2.342654e-02 * FEmotor.A1) + (+9.952569e-01 * PIPmotor.A2) + (-5.316950e-02 * PIPmotor.A1));
-    pipEestOffset = 0.009806*(-2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1));
+    //NOT at realtime thread safe
+    std::cout << std::endl << "Collecting tendonForceOffsetData(DON'T TOUCH ANYTHING)" << std::endl;
+    int avgCounter = 20;
+    double sumOffsets[4] = {0};
+    
+    for (int j=0; j < avgCounter; j++)
+    {
+        mcpFestOffset = (-5.971124e+02 + (+8.402597e-01 * FEmotor.A2) + (-4.617917e-02 * FEmotor.A1) + (-1.800978e-02 * PIPmotor.A2) + (-5.823183e-02 * PIPmotor.A1));
+        sumOffsets[0] = sumOffsets[0] + mcpFestOffset;
+        mcpEestOffset = (-1.753974e+03 + (-1.241008e-02 * FEmotor.A2) + (+2.670576e+00 * FEmotor.A1) + (-3.922166e-02 * PIPmotor.A2) + (-1.786393e-01 * PIPmotor.A1));
+        sumOffsets[1] = sumOffsets[1] + mcpEestOffset;
+        pipFestOffset = (-8.943469e+02 + (-3.292929e-02 * FEmotor.A2) + (-2.342654e-02 * FEmotor.A1) + (+9.952569e-01 * PIPmotor.A2) + (-5.316950e-02 * PIPmotor.A1));
+        sumOffsets[2] = sumOffsets[2] + pipFestOffset;
+        pipEestOffset = (-2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1));
+        sumOffsets[3] = sumOffsets[3] + pipEestOffset;
+        
+        btsleep(0.05);
+    }
+    mcpFestOffset = sumOffsets[0]/ avgCounter;
+    mcpEestOffset = sumOffsets[1]/ avgCounter;
+    pipFestOffset = sumOffsets[2]/ avgCounter;
+    pipEestOffset = sumOffsets[3]/ avgCounter;
+    std::cout << "DONE" << std::endl;
 }
     
     
@@ -43,11 +63,10 @@ void BCDigit::calcTendonForce()
 {
     //Models fit it matlab then copied into program
     //If you don't want baseline values from the SG equation then don't cal setTedonForceOffset priot to calling calcTendonForce
-    mcpFest = (0.009806*(-5.971124e+02 + (+8.402597e-01 * FEmotor.A2) + (-4.617917e-02 * FEmotor.A1) + (-1.800978e-02 * PIPmotor.A2) + (-5.823183e-02 * PIPmotor.A1))) - (mcpFestOffset);
-    mcpEest = (0.009806*(-1.753974e+03 + (-1.241008e-02 * FEmotor.A2) + (+2.670576e+00 * FEmotor.A1) + (-3.922166e-02 * PIPmotor.A2) + (-1.786393e-01 * PIPmotor.A1))) - (mcpEestOffset);
-    pipFest = (0.009806*(-8.943469e+02 + (-3.292929e-02 * FEmotor.A2) + (-2.342654e-02 * FEmotor.A1) + (+9.952569e-01 * PIPmotor.A2) + (-5.316950e-02 * PIPmotor.A1))) - (pipFestOffset);
-    pipEest = (0.009806*(-2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1))) - (pipEestOffset);
-
+    mcpFest = 0.009806*(-5.971124e+02 + (+8.402597e-01 * FEmotor.A2) + (-4.617917e-02 * FEmotor.A1) + (-1.800978e-02 * PIPmotor.A2) + (-5.823183e-02 * PIPmotor.A1) - (mcpFestOffset));
+    mcpEest = 0.009806*(-1.753974e+03 + (-1.241008e-02 * FEmotor.A2) + (+2.670576e+00 * FEmotor.A1) + (-3.922166e-02 * PIPmotor.A2) + (-1.786393e-01 * PIPmotor.A1) - (mcpEestOffset));
+    pipFest = 0.009806*(-8.943469e+02 + (-3.292929e-02 * FEmotor.A2) + (-2.342654e-02 * FEmotor.A1) + (+9.952569e-01 * PIPmotor.A2) + (-5.316950e-02 * PIPmotor.A1) - (pipFestOffset));
+    pipEest = 0.009806*(-2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1) - (pipEestOffset)) ;
     
 }
     
@@ -106,8 +125,6 @@ void BCDigit::calcPercentage(){
     
 void BCDigit::calcJointAngles(){
     
-    scaledJointVal[0] = ((jointVal[0] - 0.5000000000) / 0.7071067812);
-    jointValRad[0] = ( 0.0000000000 * pow(scaledJointVal[0],4) ) + ( 0.0000000000 * pow(scaledJointVal[0],3) ) + ( 0.0000000000 * pow(scaledJointVal[0],2) ) + ( 0.0123413415 * pow(scaledJointVal[0],1) ) + ( 0.0087266463 * pow(scaledJointVal[0],0) );
     //AdAbduction set to ZERO because not yet calibrated *******************************************************
     jointValRad[0] = 0;
     scaledJointVal[1] = ((jointVal[1] - 751.0000000000) / 212.8138858252);
@@ -127,6 +144,28 @@ void BCDigit::calcDHparams(){
     
 
 }
+    
+void BCDigit::calcEndEffectorForce()
+{
+    //Be sure to run required function before call this one.
+    // calcPercentages();
+    // calcJointAngles();
+    // calcTendonForec();
+    // calcJacobianActuation();
+    // calcDHparams();
+    
+    // fe = pinv(Jm') * Ja' * ft
+    DHp.tendonForce(2,0) =  mcpFest;
+    DHp.tendonForce(3,0) =  mcpEest;
+    DHp.tendonForce(4,0) =  pipFest;
+    DHp.tendonForce(5,0) =  pipEest;
+    
+    DHp.endEffectorForce =  DHp.jacobianTransposePseudoInverse * (DHp.jacobianActuation * DHp.tendonForce);
+    
+    
+
+}
+    
 void BCDigit::vis(){
 	/*
      if(isInit)

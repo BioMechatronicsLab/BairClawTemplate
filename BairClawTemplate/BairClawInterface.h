@@ -54,9 +54,9 @@ void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T);
 #define LINK_1_OFFSET  -0.0128
 #define LINK_2          0.0318
 #define LINK_3          0.0200
-#define PULLEY_1        0.019050
+#define PULLEY_1        0.009525
 #define PULLEY_2        100 //changes based on theta to be reassigned
-#define PULLEY_3        0.012446
+#define PULLEY_3        0.006223
 #define PULLEY_4        0.006350
     
     
@@ -70,6 +70,10 @@ public: //remove later once debuging
      */
     MatrixXd jacobianTransposePseudoInverse;
     MatrixXd jacobianActuation;
+    MatrixXd tendonForce;
+    MatrixXd endEffectorForce;
+    MatrixXd endEffectorStep01;
+    
     std::vector<MatrixXd> transformationMatrixBetweenLink;
     std::vector<MatrixXd> transformationMatrixToGlobal;
     
@@ -84,6 +88,14 @@ public: //remove later once debuging
         jacobianTransposePseudoInverse.Zero(6, NUM_LINKS);
         jacobianActuation.resize(NUM_LINKS, 6);
         jacobianActuation.Zero(NUM_LINKS, 6);
+        tendonForce.resize(6,1);
+        tendonForce.Zero(6,1);
+        endEffectorForce.resize(6,1);
+        endEffectorForce.Zero(6,1);
+        endEffectorStep01.resize(4,1);
+        endEffectorStep01.Zero(4,1);
+        
+    
         theta.resize(4);
         theta << 0,0,0,0;
         theta(0) = 1.3;
@@ -247,6 +259,7 @@ public:
 	void calcPercentage();
     void calcJointAngles();
     void calcDHparams();
+    void calcEndEffectorForce();
 	void setStaticFriction();
 	void backDrive();
     

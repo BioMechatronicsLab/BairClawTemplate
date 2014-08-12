@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		87063B78199ABE6D0090B45F /* filters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87063B77199ABE6D0090B45F /* filters.cpp */; };
 		8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */; };
 		871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B502B18231DF50000C597 /* BairClawMain.cpp */; };
 		871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B503418231E3F0000C597 /* BairClawInterface.cpp */; };
@@ -32,6 +33,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		87063B76199ABE6D0090B45F /* filters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filters.h; sourceTree = "<group>"; };
+		87063B77199ABE6D0090B45F /* filters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filters.cpp; sourceTree = "<group>"; };
 		8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MotorModCalibration.cpp; sourceTree = "<group>"; };
 		871B502818231DF50000C597 /* BairClawTemplate */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = BairClawTemplate; sourceTree = BUILT_PRODUCTS_DIR; };
 		871B502B18231DF50000C597 /* BairClawMain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BairClawMain.cpp; sourceTree = "<group>"; };
@@ -64,6 +67,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		87063B79199ABFEE0090B45F /* Filters */ = {
+			isa = PBXGroup;
+			children = (
+				87063B76199ABE6D0090B45F /* filters.h */,
+				87063B77199ABE6D0090B45F /* filters.cpp */,
+			);
+			name = Filters;
+			sourceTree = "<group>";
+		};
 		871B501F18231DF50000C597 = {
 			isa = PBXGroup;
 			children = (
@@ -129,6 +141,7 @@
 				87234565193544AD008D398A /* BairClaw */,
 				87CC3CC11936B5790084E727 /* BioTac */,
 				87CC3CC01936B5620084E727 /* EPOS */,
+				87063B79199ABFEE0090B45F /* Filters */,
 			);
 			name = SupportFiles;
 			sourceTree = "<group>";
@@ -210,6 +223,7 @@
 				871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */,
 				87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */,
 				87B6959918286CAC002FD276 /* cheetah.c in Sources */,
+				87063B78199ABE6D0090B45F /* filters.cpp in Sources */,
 				8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */,
 				87B6959818286CAC002FD276 /* BCbiotac.c in Sources */,
 				871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */,

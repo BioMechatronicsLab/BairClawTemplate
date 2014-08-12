@@ -81,6 +81,7 @@ const int NUM_OF_DIGITS = 1;
 const int BT_NUM_VAR_RECORD = 52;
 const int CAN_PORT = 1; //0 or 1
 const int NUM_JOINT_VAR_PASSED = 9;
+const int loggerOffset = 45;
 bus::CANSocket CANbus(CAN_PORT);
 static SRTIME delay=500000;
 
@@ -97,6 +98,9 @@ double error, integral, derivative, previous_error;
 dataRecording *playbackData = new dataRecording();
 //Matlab RT visualizer
 std::string host;
+//global state machine variables
+enum state{positionControl, pdcControl, idle};
+state currentState;
 
 //---------------------------
 boost::condition_variable cv;
@@ -109,6 +113,12 @@ bool biotacInit = false;
 bool shouldStart = false;
 bt_single_batch data;
 BCHand bairClaw(NUM_OF_DIGITS, &CANbus);
+struct lCell
+{
+    double x,   y,  z;
+    double tx, ty, tz;
+    int numOfMsgRevieved;
+}loadCell;
 
 
 
@@ -237,12 +247,7 @@ protected:
         outputValue->setData(&count);
         jointsOutputValue->setData(&joints);
         
-        
-        bairClaw.digit[0].calcPercentage();
-        bairClaw.digit[0].calcJointAngles();
-        bairClaw.digit[0].calcTendonForce();
-        bairClaw.digit[0].calcDHparams(); //Will also clac jacobian, pinv(jacobian') and end effoctor force
-        
+
         
 	}
     
@@ -266,6 +271,7 @@ void displayThread()
             printf("PIPset  - %d, error - %d\n", bairClaw.digit[0].PIPmotor.currSetCount, bairClaw.digit[0].PIPmotor.currSetError);
             printf("AdAbset - %d, error - %d\n", bairClaw.digit[0].ADABmotor.currSetCount, bairClaw.digit[0].ADABmotor.currSetError);
             printf("Digit - [%d, %d, %d, %d]\n",bairClaw.digit[0].jointVal[0], bairClaw.digit[0].jointVal[1], bairClaw.digit[0].jointVal[2], bairClaw.digit[0].jointVal[3]);
+           
             
             printf("Digit JointPercent-\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointPercent[0], bairClaw.digit[0].jointPercent[1], bairClaw.digit[0].jointPercent[2], bairClaw.digit[0].jointPercent[3]);
             printf("Digit JointAngleRad  -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointValRad[0], bairClaw.digit[0].jointValRad[1], bairClaw.digit[0].jointValRad[2], bairClaw.digit[0].jointValRad[3]);
@@ -278,12 +284,14 @@ void displayThread()
             std::cout << bairClaw.digit[0].DHp.jacobianTransposePseudoInverse << std::endl;
             
             std::cout << "jacobianActuation" << std::endl;
-            bairClaw.digit[0].calcJacobianActuation();
             std::cout << bairClaw.digit[0].DHp.jacobianActuation << std::endl;
-            //std::cout << "MCP_joint" << bairClaw.digit[0].jointValRad[1] << std::endl;
             
-            std::cout << " jointValRad[0] in deg = " << ( (180/M_PI) * bairClaw.digit[0].jointValRad[1]) << std::endl;
-
+            std::cout << "loadCell" << std::endl;
+            printf("[%4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f]\n",loadCell.x, loadCell.y, loadCell.z, loadCell.tx, loadCell.ty, loadCell.tz);
+            std::cout << std::endl << "endEffectorForce" << std::endl;
+            std::cout << bairClaw.digit[0].DHp.endEffectorForce;
+            
+            printf("\nP_dc - %4.2f\n", btInput[1]);
             
             printf("\nPress [Enter] to stop recording\n");
             
@@ -309,12 +317,7 @@ void err(char *str)
     exit(1);
 }
 
-struct lCell
-{
-    double x,   y,  z;
-    double tx, ty, tz;
-    int numOfMsgRevieved;
-}loadCell;
+
 
 void loadcellRecordThread()
 {
@@ -342,7 +345,7 @@ void loadcellRecordThread()
         printf("Server : bind() successful\n");
     
     loadCell.numOfMsgRevieved  = 0;
-    const int loggerOffset = 45;
+
     
     while (going)
     {
@@ -364,6 +367,7 @@ void loadcellRecordThread()
         btInput[loggerOffset + 4] = loadCell.tx;
         btInput[loggerOffset + 5] = loadCell.ty;
         btInput[loggerOffset + 6] = loadCell.tz;
+        
     }
     
     close(sockfd);
@@ -690,11 +694,12 @@ void rtControlThread(void *arg){
     rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_rtControlThreadDelay));
     std::cout << "cv.wait(lock)" << std::endl;
     boost::unique_lock<boost::mutex> lock(mut);
-    while( !ready)
-    {
-        cv.wait(lock);
-        rt_task_wait_period(NULL);
-    }
+    double desiredPos = 5, desiredPosPIPDIP = 10;
+    double changeInMotorPosFE = 0, changeInMotorPosPD = 0;
+    int sw=0, count=0;
+    //enum currentState{positionControl, pdcControl, idle}; DEFINED GLOBALLY
+    state previousState;
+    
     
     if(POSITIONCONTROL)
     {
@@ -705,53 +710,95 @@ void rtControlThread(void *arg){
         bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
         bairClaw.digit[0].PIPmotor.enable();
     }
-
-    
-    if(POSITIONCONTROL)
+    else
     {
-        //----------- BAIRCLAW SIMPLE MOVE TO BE REMOVED LATER FOR ASU MARKING FILMING DAY
-        //============================================================================================//
-        bairClaw.digit[0].FEmotor.SetCurrentLimit(300);
-        bairClaw.digit[0].FEmotor.SetPositionProfile(600,2500,2500);
         bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
-        
-        bairClaw.digit[0].PIPmotor.SetCurrentLimit(300);
-        bairClaw.digit[0].PIPmotor.SetPositionProfile(600,2500,2500);
+        bairClaw.digit[0].FEmotor.enable();
+        bairClaw.digit[0].ADABmotor.ActivateProfilePositionMode();
+        bairClaw.digit[0].ADABmotor.enable();
         bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
-        
-        
-        double desiredPos = 5, desiredPosPIPDIP = 10;
-        
-        double changeInMotorPosFE = 0, changeInMotorPosPD = 0;
-        int sw=0, count=0;
-        while (count<4000)
-        {
-            rt_task_wait_period(NULL);
-            
-            changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
-            changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
-            if(count % 2 == 0)
-            {
-                bairClaw.digit[0].FEmotor.MoveToPosition(changeInMotorPosFE, 1);
-            }
-            else
-            {
-                bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
-            }
-            count++;
+        bairClaw.digit[0].PIPmotor.enable();
+    }
+    
+    while( !ready)
+    {
+        cv.wait(lock);
+        rt_task_wait_period(NULL);
+    }
+    
+    while (true)
+    {
+        rt_task_wait_period(NULL);
+        /* //UNCOMMENT TO ADD BACK IN END EFFECTOR FORCE CALCS
+         bairClaw.digit[0].calcPercentage();
+         bairClaw.digit[0].calcJointAngles();
+         bairClaw.digit[0].calcTendonForce();
+         bairClaw.digit[0].calcJacobianActuation();
+         bairClaw.digit[0].calcDHparams(); //Will also clac jacobian, pinv(jacobian')
+         bairClaw.digit[0].calcEndEffectorForce(); //end effoctor force
+         
+         btInput[loggerOffset + 7]  = bairClaw.digit[0].DHp.endEffectorForce(0,0);
+         btInput[loggerOffset + 8]  = bairClaw.digit[0].DHp.endEffectorForce(1,0);
+         btInput[loggerOffset + 9]  = bairClaw.digit[0].DHp.endEffectorForce(2,0);
+         btInput[loggerOffset + 10] = bairClaw.digit[0].DHp.endEffectorForce(3,0);
+         btInput[loggerOffset + 11] = bairClaw.digit[0].DHp.endEffectorForce(4,0);
+         btInput[loggerOffset + 12] = bairClaw.digit[0].DHp.endEffectorForce(5,0);
+         */
 
-            
-            if(count % 100 == 0){
-                sw++;
-                if(sw % 2 == 0 ){
-                    desiredPos = 30;
-                    desiredPosPIPDIP = 150; //WAS 70
-                }else{
-                    desiredPos = 5;
-                    desiredPosPIPDIP = 30; //WAS 10
+        switch(currentState)
+        {
+            /**
+             * \desc Position control loop to move the hand to a desired location unless contact is made then it will switch modes.
+             */
+            case positionControl:
+                
+                if(previousState != currentState)
+                {
+                    bairClaw.digit[0].FEmotor.SetCurrentLimit(350);
+                    bairClaw.digit[0].FEmotor.SetPositionProfile(600,2500,2500);
+                    bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
+                    
+                    bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
+                    bairClaw.digit[0].PIPmotor.SetPositionProfile(600,2500,2500);
+                    bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
                 }
-            }
-            
+                changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
+                changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
+                if(count % 2 == 0)
+                {
+                    bairClaw.digit[0].FEmotor.MoveToPosition(changeInMotorPosFE, 1);
+                }
+                else
+                {
+                    bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
+                }
+                count++;
+                
+                if(count % 100 == 0){
+                    sw++;
+                    if(sw % 2 == 0 ){
+                        desiredPos = 17;
+                        desiredPosPIPDIP = 12; //WAS 70
+                    }else{
+                        desiredPos = 0;
+                        desiredPosPIPDIP = 10; //WAS 10
+                    }
+                }
+
+                previousState = currentState;
+                break;
+            /**
+             * \desc pdcControl controlls motor torques to maintain a desired pdc.
+             */
+            case pdcControl:
+                
+                
+                previousState = currentState;
+                break;
+            //-------------------------------------------------------------------------------//
+            case idle:
+                previousState = currentState;
+                break;
         }
     }
     
@@ -896,7 +943,7 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 	getchar();
     
-    displayOn = true; // has display thread clear and print to screen
+   
 
 
     
@@ -905,15 +952,18 @@ int main(int argc, char** argv) {
     
     time.start();
     
-    //-------------------------------------------------
-
+    // setTendonOffsets -------------------------------------------------
+    btsleep(0.5);
+    bairClaw.digit[0].setTendonForceOffset();
+    printf("Press [Enter] to START display");
+    fflush(stdout);
+    getchar();
+    
+    displayOn = true; // has display thread clear and print to screen
     connect(tg.output, logger.input);
 
 	printf("Logging started.\n");
     
-
-    
-
     if(!DEBUG)
     {
         // Follow data2Track.bin
@@ -925,8 +975,7 @@ int main(int argc, char** argv) {
     
     ready = true;
     cv.notify_all();
-    
-    
+
     
     printf("Press [Enter] to STOP logging");
 	fflush(stdout);
