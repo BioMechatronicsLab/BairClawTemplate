@@ -37,6 +37,7 @@
 
 
 #define MAXCURRENTALLOWED 1200 /**< Detailed description after the member */
+#define MAX_FOLLOWING_ERROR 99999999 //Used to prevent faluts in positon control moded
 
 namespace barrett{
 
@@ -88,6 +89,7 @@ public:
 	void reset(int node);
 	void resetAll();
 	void MoveToPosition(int pos, int controlWorld);
+    void SetMaxFollowingError(int MaxFollowingError);
 	void GetMovementState();
 	void GetPosition();
 	void SetPositionProfile(int Velocity, int MaxAccel, int MaxDecel);

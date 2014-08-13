@@ -355,7 +355,22 @@ void EPOS2::SetCurrentLimit(int setCurrentLimit){
 	bus->send(node, data, len);btsleep(0.01);
     
 }
+   
+void EPOS2::SetMaxFollowingError(int MaxFollowingError){
+    unsigned char data[bus::CANSocket::MAX_MESSAGE_LEN];
+    int len =8;
     
+    data[0] = 0X22;
+    data[1] = 0X65;
+    data[2] = 0X60;
+    data[3] = 0X00;
+    data[4] = MaxFollowingError;
+    data[5] = MaxFollowingError >> 8;
+    data[6] = 0;
+    data[7] = 0;
+    bus->send(node, data, len);btsleep(0.01);
+    
+}
 
 void EPOS2::SetCurrent(int setCurrent){
 	unsigned char data[bus::CANSocket::MAX_MESSAGE_LEN];

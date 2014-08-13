@@ -58,6 +58,7 @@
 //BioTac REQUIRED
 #include "cheetah.h"
 #include "BCbiotac.h"
+#include "filters.h"
 // UDP loadCell Server REQUIRED
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -65,7 +66,7 @@
 #include <sys/socket.h>
 
 #define DEBUG true
-#define POSITIONCONTROL false
+#define POSITIONCONTROL true
 #define biotacOff false
 
 
@@ -100,8 +101,8 @@ dataRecording *playbackData = new dataRecording();
 std::string host;
 //global state machine variables
 enum state{positionControl, pdcControl, idle};
-state currentState;
-
+state currentState = positionControl;
+int internalState = 0;
 //---------------------------
 boost::condition_variable cv;
 boost::mutex mut;
@@ -276,23 +277,22 @@ void displayThread()
             printf("Digit JointPercent-\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointPercent[0], bairClaw.digit[0].jointPercent[1], bairClaw.digit[0].jointPercent[2], bairClaw.digit[0].jointPercent[3]);
             printf("Digit JointAngleRad  -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].jointValRad[0], bairClaw.digit[0].jointValRad[1], bairClaw.digit[0].jointValRad[2], bairClaw.digit[0].jointValRad[3]);
             printf("Digit TendonForce -\n[%4.2f, %4.2f, %4.2f, %4.2f]\n",bairClaw.digit[0].mcpFest, bairClaw.digit[0].mcpEest, bairClaw.digit[0].pipFest, bairClaw.digit[0].pipEest);
-            
+            /*
             std::cout << "Jacobian" << std::endl << std::endl << std::endl;
             std::cout << std::setprecision(5) << std::fixed << bairClaw.digit[0].DHp.jacobian << std::endl;
-            
             std::cout << "jacobianTransposePseudoInverse()" << std::endl << std::endl;
             std::cout << bairClaw.digit[0].DHp.jacobianTransposePseudoInverse << std::endl;
-            
             std::cout << "jacobianActuation" << std::endl;
             std::cout << bairClaw.digit[0].DHp.jacobianActuation << std::endl;
-            
+            */
             std::cout << "loadCell" << std::endl;
             printf("[%4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f]\n",loadCell.x, loadCell.y, loadCell.z, loadCell.tx, loadCell.ty, loadCell.tz);
             std::cout << std::endl << "endEffectorForce" << std::endl;
-            std::cout << bairClaw.digit[0].DHp.endEffectorForce;
+            
             
             printf("\nP_dc - %4.2f\n", btInput[1]);
-            
+            printf(" currentState  - %d\n", currentState);
+            printf(" internalState - %d\n", internalState);
             printf("\nPress [Enter] to stop recording\n");
             
             btsleep(0.1);
@@ -694,45 +694,45 @@ void rtControlThread(void *arg){
     rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_rtControlThreadDelay));
     std::cout << "cv.wait(lock)" << std::endl;
     boost::unique_lock<boost::mutex> lock(mut);
-    double desiredPos = 5, desiredPosPIPDIP = 10;
+    double desiredPos = 5, desiredPosPIPDIP = 10, desiredPdc = 2000, pdcError;
+    double desiredPdcPIPDIPmaxJointPercentage = 40;
+    
+    
     double changeInMotorPosFE = 0, changeInMotorPosPD = 0;
     int sw=0, count=0;
     //enum currentState{positionControl, pdcControl, idle}; DEFINED GLOBALLY
-    state previousState;
-    
-    
+    state previousState = idle; //ensures that previousState and currentState start differently
+    //Define biotac filter
+    double numBW[] = {   0.002898,   0.008695,   0.008695,   0.002898};
+    double denBW[] = {   1.000000,  -2.374095,   1.929356,  -0.532075};
+    butterworthFilter btpdcFilter(3, numBW, denBW);
+    double btPdcInit = 0;
     if(POSITIONCONTROL)
     {
         bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
+        bairClaw.digit[0].FEmotor.SetMaxFollowingError(MAX_FOLLOWING_ERROR);
         bairClaw.digit[0].FEmotor.enable();
         bairClaw.digit[0].ADABmotor.ActivateProfilePositionMode();
         bairClaw.digit[0].ADABmotor.enable();
         bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
-        bairClaw.digit[0].PIPmotor.enable();
-    }
-    else
-    {
-        bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
-        bairClaw.digit[0].FEmotor.enable();
-        bairClaw.digit[0].ADABmotor.ActivateProfilePositionMode();
-        bairClaw.digit[0].ADABmotor.enable();
-        bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
+        bairClaw.digit[0].PIPmotor.SetMaxFollowingError(MAX_FOLLOWING_ERROR);
         bairClaw.digit[0].PIPmotor.enable();
     }
     
     while( !ready)
-    {
+    { //waits until main is ready to start running thread. this allows everything to initialize properly.
         cv.wait(lock);
         rt_task_wait_period(NULL);
     }
-    
+    btPdcInit = btInput[1];
     while (true)
     {
         rt_task_wait_period(NULL);
-        /* //UNCOMMENT TO ADD BACK IN END EFFECTOR FORCE CALCS
+        
          bairClaw.digit[0].calcPercentage();
          bairClaw.digit[0].calcJointAngles();
          bairClaw.digit[0].calcTendonForce();
+        /* //UNCOMMENT TO ADD BACK IN END EFFECTOR FORCE CALCS
          bairClaw.digit[0].calcJacobianActuation();
          bairClaw.digit[0].calcDHparams(); //Will also clac jacobian, pinv(jacobian')
          bairClaw.digit[0].calcEndEffectorForce(); //end effoctor force
@@ -744,6 +744,7 @@ void rtControlThread(void *arg){
          btInput[loggerOffset + 11] = bairClaw.digit[0].DHp.endEffectorForce(4,0);
          btInput[loggerOffset + 12] = bairClaw.digit[0].DHp.endEffectorForce(5,0);
          */
+        btpdcFilter.update(btInput[1]);
 
         switch(currentState)
         {
@@ -755,13 +756,16 @@ void rtControlThread(void *arg){
                 if(previousState != currentState)
                 {
                     bairClaw.digit[0].FEmotor.SetCurrentLimit(350);
-                    bairClaw.digit[0].FEmotor.SetPositionProfile(600,2500,2500);
+                    bairClaw.digit[0].FEmotor.SetPositionProfile(50,2500,2500);
                     bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
                     
                     bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
-                    bairClaw.digit[0].PIPmotor.SetPositionProfile(600,2500,2500);
+                    bairClaw.digit[0].PIPmotor.SetPositionProfile(50,2500,2500);
                     bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
+                    internalState = 1;
                 }
+                previousState = currentState;
+                
                 changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
                 changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
                 if(count % 2 == 0)
@@ -772,8 +776,16 @@ void rtControlThread(void *arg){
                 {
                     bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
                 }
-                count++;
+
                 
+                desiredPos = 50;
+                desiredPosPIPDIP = 10; //WAS 10
+                
+                if(btInput[1] > btPdcInit+20)
+                {
+                    currentState = pdcControl;
+                }
+                /*
                 if(count % 100 == 0){
                     sw++;
                     if(sw % 2 == 0 ){
@@ -783,23 +795,79 @@ void rtControlThread(void *arg){
                         desiredPos = 0;
                         desiredPosPIPDIP = 10; //WAS 10
                     }
-                }
+                }*/
 
-                previousState = currentState;
+                
                 break;
             /**
              * \desc pdcControl controlls motor torques to maintain a desired pdc.
              */
             case pdcControl:
+               
                 
-                
+                if(previousState != currentState)
+                {
+                    count = 0;
+                    bairClaw.digit[0].FEmotor.SetCurrentLimit(900);
+                    bairClaw.digit[0].FEmotor.SetPositionProfile(500,2500,2500);
+                    bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
+                    
+                    bairClaw.digit[0].PIPmotor.SetCurrentLimit(400);
+                    bairClaw.digit[0].PIPmotor.SetPositionProfile(500,2500,2500);
+                    bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
+                    internalState = 1;
+                    
+                }
                 previousState = currentState;
+                
+                if(count < 300)
+                {
+                    pdcError = desiredPdc - btInput[1];
+                    changeInMotorPosFE = -pdcError;
+                    
+                    if((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) < desiredPdcPIPDIPmaxJointPercentage)
+                    {
+                        changeInMotorPosPD = -pdcError/10;
+                    }
+                    else
+                    {
+                        changeInMotorPosPD = 0;
+                    }
+                    bairClaw.digit[0].FEmotor.MoveToPosition (changeInMotorPosFE, 1);
+                    bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
+                }
+                else if (count < 500){
+                    if(internalState < 2)
+                    {
+                        desiredPos = 2;
+                        desiredPosPIPDIP = 3;
+                        bairClaw.digit[0].FEmotor.SetPositionProfile(300,2500,2500);
+                        bairClaw.digit[0].PIPmotor.SetPositionProfile(100,2500,2500);
+                        internalState = 2;
+                    }
+                    internalState = 3;
+                    changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
+                    changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
+                    
+                    bairClaw.digit[0].FEmotor.MoveToPosition(changeInMotorPosFE, 1);
+                    bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
+                    
+                }
+                else
+                {
+                    currentState = positionControl;
+                    internalState = 1;
+                }
+                
+                
+
                 break;
             //-------------------------------------------------------------------------------//
             case idle:
                 previousState = currentState;
                 break;
         }
+        count++;
     }
     
 
