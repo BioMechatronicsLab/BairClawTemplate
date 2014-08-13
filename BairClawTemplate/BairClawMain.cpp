@@ -79,7 +79,7 @@ RT_TASK rt_control_thread; //This is going to directly send CAN communcations to
 
 const int NUM_OF_DIGITS = 1;
 
-const int BT_NUM_VAR_RECORD = 52;
+const int BT_NUM_VAR_RECORD = 54;
 const int CAN_PORT = 1; //0 or 1
 const int NUM_JOINT_VAR_PASSED = 9;
 const int loggerOffset = 45;
@@ -868,6 +868,8 @@ void rtControlThread(void *arg){
                 break;
         }
         count++;
+        btInput[loggerOffset + 7]  = currentState;
+        btInput[loggerOffset + 8]  = bairClaw.digit[0].DHp.endEffectorForce(1,0);
     }
     
 
