@@ -694,7 +694,7 @@ void rtControlThread(void *arg){
     rt_task_set_periodic(NULL, TM_NOW, secondsToRTIME(T_s_rtControlThreadDelay));
     std::cout << "cv.wait(lock)" << std::endl;
     boost::unique_lock<boost::mutex> lock(mut);
-    double desiredPos = 5, desiredPosPIPDIP = 10, desiredPdc = 2000, pdcError;
+    double desiredPos = 5, desiredPosPIPDIP = 10, desiredPdc = 1950, pdcError;
     double desiredPdcPIPDIPmaxJointPercentage = 40;
     
     
@@ -762,7 +762,7 @@ void rtControlThread(void *arg){
                     bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
                     bairClaw.digit[0].PIPmotor.SetPositionProfile(50,2500,2500);
                     bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
-                    internalState = 1;
+                    internalState = 0;
                 }
                 previousState = currentState;
                 
@@ -781,7 +781,7 @@ void rtControlThread(void *arg){
                 desiredPos = 50;
                 desiredPosPIPDIP = 10; //WAS 10
                 
-                if(btInput[1] > btPdcInit+20)
+                if(btInput[1] > 1910)
                 {
                     currentState = pdcControl;
                 }
@@ -809,11 +809,11 @@ void rtControlThread(void *arg){
                 {
                     count = 0;
                     bairClaw.digit[0].FEmotor.SetCurrentLimit(900);
-                    bairClaw.digit[0].FEmotor.SetPositionProfile(500,2500,2500);
+                    bairClaw.digit[0].FEmotor.SetPositionProfile(800,2500,2500);
                     bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
                     
                     bairClaw.digit[0].PIPmotor.SetCurrentLimit(400);
-                    bairClaw.digit[0].PIPmotor.SetPositionProfile(500,2500,2500);
+                    bairClaw.digit[0].PIPmotor.SetPositionProfile(800,2500,2500);
                     bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
                     internalState = 1;
                     
@@ -836,13 +836,13 @@ void rtControlThread(void *arg){
                     bairClaw.digit[0].FEmotor.MoveToPosition (changeInMotorPosFE, 1);
                     bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
                 }
-                else if (count < 500){
+                else if (count < 400){
                     if(internalState < 2)
                     {
-                        desiredPos = 2;
-                        desiredPosPIPDIP = 3;
-                        bairClaw.digit[0].FEmotor.SetPositionProfile(300,2500,2500);
-                        bairClaw.digit[0].PIPmotor.SetPositionProfile(100,2500,2500);
+                        desiredPos = 1;
+                        desiredPosPIPDIP = 1;
+                        bairClaw.digit[0].FEmotor.SetPositionProfile(800,2500,2500);
+                        bairClaw.digit[0].PIPmotor.SetPositionProfile(800,2500,2500);
                         internalState = 2;
                     }
                     internalState = 3;
@@ -869,7 +869,7 @@ void rtControlThread(void *arg){
         }
         count++;
         btInput[loggerOffset + 7]  = currentState;
-        btInput[loggerOffset + 8]  = bairClaw.digit[0].DHp.endEffectorForce(1,0);
+        btInput[loggerOffset + 8]  = internalState;
     }
     
 

@@ -158,10 +158,10 @@
 		87CC3CC11936B5790084E727 /* BioTac */ = {
 			isa = PBXGroup;
 			children = (
-				87B6959418286CAC002FD276 /* BCbiotac.c */,
 				87B6959518286CAC002FD276 /* BCbiotac.h */,
-				87B6959618286CAC002FD276 /* cheetah.c */,
+				87B6959418286CAC002FD276 /* BCbiotac.c */,
 				87B6959718286CAC002FD276 /* cheetah.h */,
+				87B6959618286CAC002FD276 /* cheetah.c */,
 			);
 			name = BioTac;
 			sourceTree = "<group>";
