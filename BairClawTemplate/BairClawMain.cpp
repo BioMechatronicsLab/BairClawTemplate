@@ -731,7 +731,7 @@ void rtControlThread(void *arg){
         
          bairClaw.digit[0].calcPercentage();
          bairClaw.digit[0].calcJointAngles();
-         bairClaw.digit[0].calcTendonForce(); 
+         bairClaw.digit[0].calcTendonForce();
         /* //UNCOMMENT TO ADD BACK IN END EFFECTOR FORCE CALCS
          bairClaw.digit[0].calcJacobianActuation();
          bairClaw.digit[0].calcDHparams(); //Will also clac jacobian, pinv(jacobian')
