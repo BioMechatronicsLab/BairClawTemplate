@@ -18,6 +18,8 @@
 		87B6959818286CAC002FD276 /* BCbiotac.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959418286CAC002FD276 /* BCbiotac.c */; };
 		87B6959918286CAC002FD276 /* cheetah.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959618286CAC002FD276 /* cheetah.c */; };
 		87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87E511381832CF8B00DBC8C7 /* BairClawMain-old.cpp */; };
+		87F2418F19B7894E00399B52 /* dualTeachAndPlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F2418E19B7894E00399B52 /* dualTeachAndPlay.cpp */; };
+		87FCA35419B91DD300AB8872 /* dualWAMPhotoShoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -54,6 +56,8 @@
 		87B6959718286CAC002FD276 /* cheetah.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cheetah.h; sourceTree = "<group>"; };
 		87E4433A184E5EFC00BDD2AD /* codeSnidbits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = codeSnidbits.h; sourceTree = "<group>"; };
 		87E511381832CF8B00DBC8C7 /* BairClawMain-old.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "BairClawMain-old.cpp"; path = "Resources/BairClawMain-old.cpp"; sourceTree = "<group>"; };
+		87F2418E19B7894E00399B52 /* dualTeachAndPlay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualTeachAndPlay.cpp; sourceTree = "<group>"; };
+		87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualWAMPhotoShoot.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +100,8 @@
 			isa = PBXGroup;
 			children = (
 				871B502B18231DF50000C597 /* BairClawMain.cpp */,
+				87F2418E19B7894E00399B52 /* dualTeachAndPlay.cpp */,
+				87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */,
 				8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */,
 				87E4433A184E5EFC00BDD2AD /* codeSnidbits.h */,
 				87CC3CBF1936B5500084E727 /* SupportFiles */,
@@ -218,6 +224,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				871B503918231E3F0000C597 /* EPOSInterface.cpp in Sources */,
+				87F2418F19B7894E00399B52 /* dualTeachAndPlay.cpp in Sources */,
 				87B695931828319A002FD276 /* log_sg_data.cpp in Sources */,
 				8723456A193563E0008D398A /* BairClawActuationJ.cpp in Sources */,
 				871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */,
@@ -226,6 +233,7 @@
 				87063B78199ABE6D0090B45F /* filters.cpp in Sources */,
 				8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */,
 				87B6959818286CAC002FD276 /* BCbiotac.c in Sources */,
+				87FCA35419B91DD300AB8872 /* dualWAMPhotoShoot.cpp in Sources */,
 				871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */,
 				87B6959118281D11002FD276 /* example.c in Sources */,
 			);

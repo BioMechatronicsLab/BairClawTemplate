@@ -746,7 +746,7 @@ void rtControlThread(void *arg){
          */
         btpdcFilter.update(btInput[1]);
 
-        switch(currentState)
+        switch(currentState) //THIS branch will never leave position control
         {
             /**
              * \desc Position control loop to move the hand to a desired location unless contact is made then it will switch modes.
@@ -756,11 +756,11 @@ void rtControlThread(void *arg){
                 if(previousState != currentState)
                 {
                     bairClaw.digit[0].FEmotor.SetCurrentLimit(350);
-                    bairClaw.digit[0].FEmotor.SetPositionProfile(50,2500,2500);
+                    bairClaw.digit[0].FEmotor.SetPositionProfile(250,2500,2500);
                     bairClaw.digit[0].FEmotor.ActivateProfilePositionMode();
                     
                     bairClaw.digit[0].PIPmotor.SetCurrentLimit(350);
-                    bairClaw.digit[0].PIPmotor.SetPositionProfile(50,2500,2500);
+                    bairClaw.digit[0].PIPmotor.SetPositionProfile(250,2500,2500);
                     bairClaw.digit[0].PIPmotor.ActivateProfilePositionMode();
                     internalState = 0;
                 }
@@ -768,6 +768,7 @@ void rtControlThread(void *arg){
                 
                 changeInMotorPosFE = (bairClaw.digit[0].jointPercent[1] - desiredPos) * 50;
                 changeInMotorPosPD = ((bairClaw.digit[0].jointPercent[2] + bairClaw.digit[0].jointPercent[3]) - desiredPosPIPDIP) * 50;
+
                 if(count % 2 == 0)
                 {
                     bairClaw.digit[0].FEmotor.MoveToPosition(changeInMotorPosFE, 1);
@@ -777,14 +778,29 @@ void rtControlThread(void *arg){
                     bairClaw.digit[0].PIPmotor.MoveToPosition(changeInMotorPosPD, 1);
                 }
 
+                if(count % 100 == 0)
+                {
+                    sw++;
+                    if(sw % 2 == 0 ){
+                        /* tap
+                        desiredPos = 45;
+                        desiredPosPIPDIP = 16; //WAS 70
+                         */
+                        /* stroke */
+                        desiredPos = 10;
+                        desiredPosPIPDIP = 80; //WAS 70
+                    }else{
+                        desiredPos = 0;
+                        desiredPosPIPDIP = 10; //WAS 10
+                    }
+                }
                 
-                desiredPos = 50;
-                desiredPosPIPDIP = 10; //WAS 10
-                
+                /* UNCOMMENT to put state control back in
                 if(btInput[1] > 1910)
                 {
                     currentState = pdcControl;
                 }
+                */
                 /*
                 if(count % 100 == 0){
                     sw++;
