@@ -46,12 +46,12 @@ int main(int argc, char** argv) {
 	installExceptionHandler();
 
 	ProductManager pm0;
-	ProductManager pm1("/etc/barrett/bus1/default.conf");
+	//ProductManager pm1("/etc/barrett/bus1/default.conf");
 
 	printf("Starting the WAM on Bus 0...\n");
 	boost::thread wt0 = startWam(pm0, wamThread0<4>, wamThread0<7>);
 	printf("Starting the WAM on Bus 1...\n");
-	boost::thread wt1 = startWam(pm1, wamThread1<4>, wamThread1<7>);
+	//boost::thread wt1 = startWam(pm1, wamThread1<4>, wamThread1<7>);
     std::cout << "Press [Enter] to init Hand" << std::endl;
     waitForEnter();
     shouldInitHand = true;
@@ -91,8 +91,8 @@ int main(int argc, char** argv) {
     waitForEnter();
     shouldSendWAMHome = true;
 
-	wt0.join();
-	wt1.join();
+    wt0.join();
+	//wt1.join();
 
 	return 0;
 }
