@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		870303D519BF879C00C09CCD /* dualWAMIPadContorller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 870303D419BF879C00C09CCD /* dualWAMIPadContorller.cpp */; };
+		870303D819BF887500C09CCD /* dualWAMIPadController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 870303D719BF887500C09CCD /* dualWAMIPadController.cpp */; };
 		87063B78199ABE6D0090B45F /* filters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87063B77199ABE6D0090B45F /* filters.cpp */; };
 		8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */; };
 		871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B502B18231DF50000C597 /* BairClawMain.cpp */; };
@@ -38,7 +38,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		870303D419BF879C00C09CCD /* dualWAMIPadContorller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualWAMIPadContorller.cpp; sourceTree = "<group>"; };
+		870303D719BF887500C09CCD /* dualWAMIPadController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualWAMIPadController.cpp; sourceTree = "<group>"; };
 		87063B76199ABE6D0090B45F /* filters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filters.h; sourceTree = "<group>"; };
 		87063B77199ABE6D0090B45F /* filters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filters.cpp; sourceTree = "<group>"; };
 		8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MotorModCalibration.cpp; sourceTree = "<group>"; };
@@ -84,7 +84,7 @@
 				87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */,
 				87D6F97D19BA0FDF0088C4BA /* dualWAMPhotoShoot0.cpp */,
 				87D6F97E19BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp */,
-				870303D419BF879C00C09CCD /* dualWAMIPadContorller.cpp */,
+				870303D719BF887500C09CCD /* dualWAMIPadController.cpp */,
 			);
 			name = dualWAMcode;
 			sourceTree = "<group>";
@@ -247,7 +247,7 @@
 				8723456A193563E0008D398A /* BairClawActuationJ.cpp in Sources */,
 				871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */,
 				87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */,
-				870303D519BF879C00C09CCD /* dualWAMIPadContorller.cpp in Sources */,
+				870303D819BF887500C09CCD /* dualWAMIPadController.cpp in Sources */,
 				87B6959918286CAC002FD276 /* cheetah.c in Sources */,
 				87063B78199ABE6D0090B45F /* filters.cpp in Sources */,
 				8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */,
