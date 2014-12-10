@@ -80,11 +80,8 @@
 		870303D619BF87A600C09CCD /* dualWAMcode */ = {
 			isa = PBXGroup;
 			children = (
-				87F2418E19B7894E00399B52 /* dualTeachAndPlay.cpp */,
-				87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */,
-				87D6F97D19BA0FDF0088C4BA /* dualWAMPhotoShoot0.cpp */,
-				87D6F97E19BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp */,
 				870303D719BF887500C09CCD /* dualWAMIPadController.cpp */,
+				87554C7C1A3810FE00A26B58 /* OldDualWAMcode */,
 			);
 			name = dualWAMcode;
 			sourceTree = "<group>";
@@ -145,6 +142,17 @@
 				87234569193563E0008D398A /* BairClawActuationJ.cpp */,
 			);
 			name = ActuationMatrix;
+			sourceTree = "<group>";
+		};
+		87554C7C1A3810FE00A26B58 /* OldDualWAMcode */ = {
+			isa = PBXGroup;
+			children = (
+				87F2418E19B7894E00399B52 /* dualTeachAndPlay.cpp */,
+				87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */,
+				87D6F97D19BA0FDF0088C4BA /* dualWAMPhotoShoot0.cpp */,
+				87D6F97E19BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp */,
+			);
+			name = OldDualWAMcode;
 			sourceTree = "<group>";
 		};
 		87B6958E18281C93002FD276 /* Resources */ = {

@@ -9,6 +9,9 @@
 
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <pthread.h>
+
+
 
 #include <barrett/exception.h>
 #include <barrett/units.h>
@@ -35,7 +38,7 @@
 #define BUFLEN 1000
 #define PORT 9330
 
-
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 using namespace barrett;
 using namespace rapidjson;
 using detail::waitForEnter;
@@ -47,16 +50,25 @@ bool  shouldHoldPosition = false;
 bool  shouldSendWAMHome = false;
 bool  shouldIterate = false;
 
-bool WAMg = false;
-bool WAMh = false;
-bool WAMs = false;
 typedef Hand::jp_type hjp_t;
 
+struct wam_controller_state{
+    int  moveToStart;  //0-false 1-true 2-ready 3-itemSpecific
+    int  gravityComp;
+    int  startTeach; //4-stopTeach
+    int  replayTeach;
+    int  moveToStartOfTraj;
+    int  shouldMoveHome;
+    int  wamState;
+    int  bus;
+} wam0_state, wam1_state;
+
 boost::thread startWam(ProductManager& pm,
-		boost::function<void (ProductManager&, systems::Wam<4>&)> wt4,
-		boost::function<void (ProductManager&, systems::Wam<7>&)> wt7);
-template <size_t DOF> void wamThread0(ProductManager& pm0, systems::Wam<DOF>& wam0);
-template <size_t DOF> void wamThread1(ProductManager& pm1, systems::Wam<DOF>& wam1);
+        wam_controller_state& wamControllerState,
+		boost::function<void (ProductManager&, wam_controller_state&, systems::Wam<4>&)> wt4,
+		boost::function<void (ProductManager&, wam_controller_state&, systems::Wam<7>&)> wt7);
+template <size_t DOF> void wamThread0( ProductManager& pm0, wam_controller_state& wamControllerState, systems::Wam<DOF>& wam0);
+template <size_t DOF> void wamThread1( ProductManager& pm1, wam_controller_state& wamControllerState, systems::Wam<DOF>& wam1);
 void handIPadController(ProductManager& pm0, ProductManager& pm1);
 
 void err(char *str)
@@ -66,29 +78,47 @@ void err(char *str)
 }
 
 
+
+
 int main(int argc, char** argv) {
 	// Give us pretty stack-traces when things die
 	installExceptionHandler();
-
+    wam0_state.bus = 0; //Does nothing just keeps track of which canbus is assign for each WAM
+    wam1_state.bus = 1; //Actual bus assigned from defalut.conf defined in ProductManager initilizer
+    wam0_state.wamState = 0;
+    wam1_state.wamState = 0;
+    
 	ProductManager pm0;
-	//ProductManager pm1("/etc/barrett/bus1/default.conf");
+	ProductManager pm1("/etc/barrett/bus1/default.conf");
 
 	printf("Starting the WAM on Bus 0...\n");
-	boost::thread wt0 = startWam(pm0, wamThread0<4>, wamThread0<7>);
+	boost::thread wt0 = startWam(pm0, wam0_state, wamThread0<4>, wamThread0<7>);
 	printf("Starting the WAM on Bus 1...\n");
-	//boost::thread wt1 = startWam(pm1, wamThread1<4>, wamThread1<7>);
-    boost::thread handIPad(handIPadController, boost::ref(pm0), boost::ref(pm0));
-    
-    printf("Press [ENTER] InitHandFrom hand thread");
-    waitForEnter();
-    WAMh = true;
+	boost::thread wt1 = startWam(pm1, wam1_state, wamThread1<4>, wamThread1<7>);
+    boost::thread handIPad(handIPadController, boost::ref(pm0), boost::ref(pm1));
     
 
     wt0.join();
-    handIPad.join();
-	//wt1.join();
+    wt1.join();
+    handIPad.interrupt();
+	
 
 	return 0;
+}
+
+boost::thread startWam(ProductManager& pm,
+                       wam_controller_state& wamControllerState,
+                       boost::function<void (ProductManager&, wam_controller_state&, systems::Wam<4>&)> wt4,
+                       boost::function<void (ProductManager&, wam_controller_state&, systems::Wam<7>&)> wt7)
+{
+    pm.waitForWam();
+    pm.wakeAllPucks();
+    
+    if (pm.foundWam4()) {
+        return boost::thread(wt4, boost::ref(pm), boost::ref(wamControllerState), boost::ref(*pm.getWam4()));
+    } else {
+        return boost::thread(wt7, boost::ref(pm), boost::ref(wamControllerState), boost::ref(*pm.getWam7()));
+    }
 }
 
 
@@ -101,15 +131,20 @@ void handIPadController(ProductManager& pm0, ProductManager& pm1)
         printf("ERROR: No Hand found on bus!\n");
     }
     std::cout << "FOUND Hand on bus - " << pm0.getWamDefaultConfigPath() << "  -" << std::endl;
+    if ( !pm1.foundHand() ) {
+        printf("ERROR: No Hand found on bus!\n");
+    }
+    std::cout << "FOUND Hand on bus - " << pm1.getWamDefaultConfigPath() << "  -" << std::endl;
     Hand& hand0 = *pm0.getHand();
-
+    Hand& hand1 = *pm1.getHand();
     
 
     
     //JSON object handling
     char buf[BUFLEN];
+    char sendbuf[BUFLEN];
     struct sockaddr_in my_addr, cli_addr;
-    int sockfd;
+    int sockfd, sendLen;
     socklen_t slen=sizeof(cli_addr);
     //char buf[BUFLEN];
     
@@ -130,7 +165,7 @@ void handIPadController(ProductManager& pm0, ProductManager& pm1)
     
     
     
-    while (pm0.getSafetyModule()->getMode() == SafetyModule::ACTIVE)
+    while (pm0.getSafetyModule()->getMode() == SafetyModule::ACTIVE && pm1.getSafetyModule()->getMode() == SafetyModule::ACTIVE)
     {
         Document document;
         memset(buf, 0, BUFLEN);
@@ -146,21 +181,39 @@ void handIPadController(ProductManager& pm0, ProductManager& pm1)
 
         if(document.IsObject())
         { //JSON success now handle what to do
-            printf("hand0_spread = %g\n", document["hand0_spread"].GetDouble());
-            printf("hand1_spread = %g\n", document["hand1_spread"].GetDouble());
+            //Parse into Variables
+            wam0_state.moveToStart        = document["wam0_moveToStart"].GetInt();
+            wam1_state.moveToStart        = document["wam1_moveToStart"].GetInt();
+            wam0_state.gravityComp        = document["wam0_gravityComp"].GetInt();
+            wam1_state.gravityComp        = document["wam1_gravityComp"].GetInt();
+            wam0_state.startTeach         = document["wam0_startTeach"].GetInt();
+            wam1_state.startTeach         = document["wam1_startTeach"].GetInt();
+            wam0_state.replayTeach        = document["wam0_replayTeach"].GetInt();
+            wam1_state.replayTeach        = document["wam1_replayTeach"].GetInt();
+            wam0_state.moveToStartOfTraj  = document["wam0_moveToStartOfTraj"].GetInt();
+            wam1_state.moveToStartOfTraj  = document["wam1_moveToStartOfTraj"].GetInt();
+            wam0_state.shouldMoveHome     = document["wam0_shouldMoveHome"].GetInt();
+            wam1_state.shouldMoveHome     = document["wam1_shouldMoveHome"].GetInt();
+            
+            //printf("\nwam1_state.replayTeach - %d\n", wam1_state.replayTeach);
+            
             hand0_shouldInit = document["hand0_shouldInit"].GetInt();
-            printf("hand0_shouldInit = %d\n", hand0_shouldInit);
+            hand1_shouldInit = document["hand1_shouldInit"].GetInt();
+        
+            //printf("hand0_shouldInit = %d\n", hand0_shouldInit);
             const Value& hand0_finger = document["hand0_finger"]; // Using a reference for consecutive access is handy and faster.
+            /*
             assert(hand0_finger.IsArray());
             for (SizeType i = 0; i < hand0_finger.Size(); i++) // rapidjson uses SizeType instead of size_t.
-                printf("hand0_finger[%d] = %4.4f\n", i, hand0_finger[i].GetDouble());
-            
+                //printf("hand0_finger[%d] = %4.4f\n", i, hand0_finger[i].GetDouble());
+            */
             
             const Value& hand1_finger = document["hand1_finger"]; // Using a reference for consecutive access is handy and faster.
+            /*
             assert(hand1_finger.IsArray());
             for (SizeType i = 0; i < hand1_finger.Size(); i++) // rapidjson uses SizeType instead of size_t.
                 printf("hand1_finger[%d] = %4.4f\n", i, hand1_finger[i].GetDouble());
-            
+            */
             
             
             
@@ -175,14 +228,36 @@ void handIPadController(ProductManager& pm0, ProductManager& pm1)
                 hand0.velocityMove(hjp_t(fingerPos,fingerPos,fingerPos,fingerSpread), Hand::WHOLE_HAND);
             }
             
+            if(hand1_shouldInit)
+            {
+                hand1.initialize();
+            }
+            else
+            {
+                double fingerPos1   = hand1_finger[SizeType(0)].GetDouble();
+                double fingerSpread1 = hand1_finger[SizeType(3)].GetDouble();
+                hand1.velocityMove(hjp_t(fingerPos1,fingerPos1,fingerPos1,fingerSpread1), Hand::WHOLE_HAND);
+            }
+            
         }
         else
         {
             printf("!IsObject()");
         }
         
-        printf("\nUDP recieve\n");
+        //printf("\nUDP recieve\n");
+        //UDP send
+        memset(sendbuf, 0, BUFLEN);
+        sendLen = sprintf(sendbuf,"{\"wam0_moveToStart\":%d,\"wam1_moveToStart\":%d,\"wam0_gravityComp\":%d,\"wam1_gravityComp\":%d,\"wam0_startTeach\":%d,\"wam1_startTeach\":%d,\"wam0_replayTeach\":%d,\"wam1_replayTeach\":%d,\"wam0_moveToStartOfTraj\":%d,\"wam1_moveToStartOfTraj\":%d,\"wam0_shouldMoveHome\":%d,\"wam1_shouldMoveHome\":%d,\"wam0_state\":%d,\"wam1_state\":%d}", wam0_state.moveToStart, wam1_state.moveToStart, wam0_state.gravityComp, wam1_state.gravityComp, wam0_state.startTeach, wam1_state.startTeach, wam0_state.replayTeach, wam1_state.replayTeach, wam0_state.moveToStartOfTraj, wam1_state.moveToStartOfTraj, wam0_state.shouldMoveHome, wam1_state.shouldMoveHome, wam0_state.wamState, wam1_state.wamState);
         
+        //printf("\n%s\n", sendbuf);
+        //printf("\n%s\n", buf);
+        //printf("UDPlocal - wam0_shouldInit = %d\n", document["wam0_moveToStart"].GetInt());
+        //printf("UDPlocal - wam1_shouldInit = %d\n", document["wam1_moveToStart"].GetInt());
+        //printf("UDP - wam0_shouldInit = %d  wam1_shouldInit = %d\n", document["wam0_moveToStart"].GetInt(), document["wam1_moveToStart"].GetInt());
+
+        
+        sendto(sockfd, sendbuf, sendLen, 0, (struct sockaddr*)&cli_addr, slen);
     }
     
     close(sockfd);
@@ -190,73 +265,160 @@ void handIPadController(ProductManager& pm0, ProductManager& pm1)
 
 }
 
-boost::thread startWam(ProductManager& pm,
-		boost::function<void (ProductManager&, systems::Wam<4>&)> wt4,
-		boost::function<void (ProductManager&, systems::Wam<7>&)> wt7)
-{
-	pm.waitForWam();
-	pm.wakeAllPucks();
-
-	if (pm.foundWam4()) {
-		return boost::thread(wt4, boost::ref(pm), boost::ref(*pm.getWam4()));
-	} else {
-		return boost::thread(wt7, boost::ref(pm), boost::ref(*pm.getWam7()));
-	}
-}
 
 
-template <size_t DOF> void wamThread0(ProductManager& pm, systems::Wam<DOF>& wam) {
+
+template <size_t DOF> void wamThread0(ProductManager& pm, wam_controller_state& wamControllerState, systems::Wam<DOF>& wam) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-
-	/*
-    wam.gravityCompensate();
-    Hand& hand = *pm.getHand();
-    typedef Hand::jp_type hjp_t;
-    double OR = -0.75;
-	double CR = 0.75;
-    Hand::jv_type opening(OR);
-	Hand::jv_type closing(CR);
-	double O = 0.0;
-	double C = 2.4;
-	double SC = M_PI;
-	hjp_t open(O);
-	hjp_t closed(C);
-	closed[3] = SC;
+    printf("\nbus - %d\n", wamControllerState.bus);
+    wamControllerState.wamState = 0;
     
+    while( wamControllerState.moveToStart != 5)
+    {
+        btsleep(0.2);
+    }
+    
+    
+    wam.gravityCompensate();
 	jp_type jp(0.0);
 	wam.moveTo(jp);
-    btsleep(1);
-    
-    
-    
-    while(!shouldInitHand)
+    btsleep(2);
+    int fromIdle = 0;
+    wamControllerState.wamState = 1;
+    while(wamControllerState.startTeach == 0)
     {
-        btsleep(0.1);
-    }
-    if ( !pm.foundHand() ) {
-        printf("ERROR: No Hand found on bus!\n");
-    }
-    else
-    {
-        std::cout << "FOUND Hand on bus - " << pm.getWamDefaultConfigPath() << "  -" << std::endl;
-        hand.initialize();
-        hand.close();
-        hand.trapezoidalMove(open, Hand::GRASP);
 
-    }
-    double spreadOpen = 0.0;
-
-    while(shouldKeepRunning)
-    {
-        while(!shouldIterate)
+        while(wamControllerState.gravityComp == 0)
         {
-            btsleep(0.01);
+            btsleep(0.1);
         }
-        if(WAMg)
+        
+        if(wamControllerState.gravityComp == 1)
         {
             wam.idle();
-            std::cout << "WAM THREAD GRAVITYCOMP" << std::endl;
+            fromIdle = 1;
         }
+        else if(wamControllerState.gravityComp == 3)
+        {
+            if(fromIdle == 1){
+                wam.moveTo(wam.getJointPositions());
+                fromIdle = 0;
+            }
+            wam.moveTo(wam.getJointPositions());
+
+        }
+        btsleep(0.1);
+        
+    }
+    
+    wamControllerState.wamState = 2;
+    printf("Entering Teach, bus - %d\n",wamControllerState.bus);
+    typedef boost::tuple<double, jp_type> jp_sample_type;
+    
+    char tmpFile[] = "/tmp/btXXXXXX";
+    if (mkstemp(tmpFile) == -1) {
+        printf("ERROR: Couldn't create temporary file!\n");
+    }
+    
+    const double T_s = pm.getExecutionManager()->getPeriod();
+    
+    
+    systems::Ramp time(pm.getExecutionManager());
+    
+    systems::TupleGrouper<double, jp_type> jpLogTg;
+    
+    // Record at 1/10th of the loop rate
+    systems::PeriodicDataLogger<jp_sample_type> jpLogger(pm.getExecutionManager(),
+                                                         new barrett::log::RealTimeWriter<jp_sample_type>(tmpFile, 10*T_s), 10);
+    
+    
+    //printf("Press [Enter] to start teaching.\n");
+    //waitForEnter();
+    wam.idle();
+
+    {
+        // Make sure the Systems are connected on the same execution cycle
+        // that the time is started. Otherwise we might record a bunch of
+        // samples all having t=0; this is bad because the Spline requires time
+        // to be monotonic.
+        BARRETT_SCOPED_LOCK(pm.getExecutionManager()->getMutex());
+        
+        connect(time.output, jpLogTg.template getInput<0>());
+        connect(wam.jpOutput, jpLogTg.template getInput<1>());
+        connect(jpLogTg.output, jpLogger.input);
+        time.start();
+    }
+    
+    
+    while( wamControllerState.startTeach != 2 )
+    {
+        btsleep(0.01);
+    }
+  
+    jpLogger.closeLog();
+    disconnect(jpLogger.input);
+    wamControllerState.wamState = 3;
+    printf("Done Teaching, bus - %d\n",wamControllerState.bus);
+    // Build spline between recorded points
+    log::Reader<jp_sample_type> lr(tmpFile);
+    std::vector<jp_sample_type> vec;
+    for (size_t i = 0; i < lr.numRecords(); ++i) {
+        vec.push_back(lr.getRecord());
+    }
+    math::Spline<jp_type> spline(vec);
+    
+    
+    //printf("Press [Enter] to play back the recorded trajectory.\n");
+    //waitForEnter();
+    
+    // First, move to the starting position
+    wam.moveTo(spline.eval(spline.initialS()));
+    int count;
+    while( wamControllerState.shouldMoveHome != 1 )
+    {
+        wamControllerState.wamState = 4;
+        while(wamControllerState.replayTeach != 10)
+        {
+            btsleep(0.01);
+            printf("PlayTeach, bus - %d\n",wamControllerState.bus);
+        }
+        wamControllerState.wamState = 5; //playing
+        // Then play back the recorded motion
+        time.stop();
+        time.setOutput(spline.initialS());
+        
+        systems::Callback<double, jp_type> trajectory(boost::ref(spline));
+        connect(time.output, trajectory.input);
+        wam.trackReferenceSignal(trajectory.output);
+        
+        time.start();
+        
+        while (trajectory.input.getValue() < spline.finalS()) {
+            usleep(100000);
+        }
+        printf("Done Playing Trajectory, bus - %d\n",wamControllerState.bus);
+        wamControllerState.wamState = 6;
+        while(wamControllerState.moveToStartOfTraj != 1)
+        {
+            btsleep(0.01);
+            printf("%d:Waiting for moveToStartOfTraj - %d or shouldMoveHome - %d, bus - %d\n", count, wamControllerState.moveToStartOfTraj, wamControllerState.shouldMoveHome, wamControllerState.bus);
+            if(wamControllerState.shouldMoveHome == 1 )
+            {
+                break;
+            }
+        }
+        
+        wam.moveTo(spline.eval(spline.initialS()));
+        btsleep(1.5);
+        
+    }
+
+
+    
+    /*
+    wam.idle();
+        std::cout << "WAM THREAD GRAVITYCOMP" << std::endl;
+
         else if(WAMh)
         {
             wam.moveTo(wam.getJointPositions());
@@ -284,8 +446,9 @@ template <size_t DOF> void wamThread0(ProductManager& pm, systems::Wam<DOF>& wam
     {
         btsleep(0.1);
     }
+    */
     wam.moveHome();
-     */
+    
     std::cout << std::endl << "Shift-idle to end program" << std::endl;
     while (pm.getSafetyModule()->getMode() == SafetyModule::ACTIVE) {
 
@@ -294,8 +457,8 @@ template <size_t DOF> void wamThread0(ProductManager& pm, systems::Wam<DOF>& wam
 
 }
 
-template <size_t DOF> void wamThread1(ProductManager& pm1, systems::Wam<DOF>& wam1) {
-	wamThread0(pm1, wam1);
+template <size_t DOF> void wamThread1(ProductManager& pm1, wam_controller_state& wamControllerState, systems::Wam<DOF>& wam1) {
+	wamThread0(pm1, wamControllerState, wam1);
 }
 
 
