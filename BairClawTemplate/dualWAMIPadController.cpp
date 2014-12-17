@@ -36,8 +36,9 @@
 #include <stdlib.h>
 #include <string.h>
 #define BUFLEN 1000
-#define PORT 9330
+#define PORT 9330 //Port for iphone app
 
+#pragma mark - declarations
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 using namespace barrett;
 using namespace rapidjson;
@@ -49,8 +50,9 @@ bool  shouldGravityComp = false;
 bool  shouldHoldPosition = false;
 bool  shouldSendWAMHome = false;
 bool  shouldIterate = false;
-
+int   wamPicker=0; //tells which wam to run or chooses which 0 or 1
 typedef Hand::jp_type hjp_t;
+
 
 struct wam_controller_state{
     int  moveToStart;  //0-false 1-true 2-ready 3-itemSpecific
@@ -88,18 +90,48 @@ int main(int argc, char** argv) {
     wam0_state.wamState = 0;
     wam1_state.wamState = 0;
     
-	ProductManager pm0;
-	ProductManager pm1("/etc/barrett/bus1/default.conf");
-
-	printf("Starting the WAM on Bus 0...\n");
-	boost::thread wt0 = startWam(pm0, wam0_state, wamThread0<4>, wamThread0<7>);
-	printf("Starting the WAM on Bus 1...\n");
-	boost::thread wt1 = startWam(pm1, wam1_state, wamThread1<4>, wamThread1<7>);
-    boost::thread handIPad(handIPadController, boost::ref(pm0), boost::ref(pm1));
+    ProductManager *pm0, *pm1;
+    boost::thread *wt0, *wt1;
     
+    if(argc > 2)
+    {
+        wamPicker = atoi(argv[1]);
+    }
+    if(wamPicker == 0)
+    {//Start only wam0
+        ProductManager pm0l;
+        pm0 = &pm0l;
+        printf("Starting the WAM on Bus 0...\n");
+        boost::thread wt0l = startWam(*pm0, wam0_state, wamThread0<4>, wamThread0<7>);
+        wt0 = &wt0l;
 
-    wt0.join();
-    wt1.join();
+    }
+    if(wamPicker == 1)
+    {//Start only wam1
+        ProductManager pm1l("/etc/barrett/bus1/default.conf");
+        pm1 = &pm1l;
+        printf("Starting the WAM on Bus 1...\n");
+        boost::thread wt1l = startWam(*pm1, wam1_state, wamThread1<4>, wamThread1<7>);
+        wt1 = &wt1l;
+    }
+    else
+    {//Start both wam1 & wam2
+        ProductManager pm0l;
+        pm0 = &pm0l;
+        printf("Starting the WAM on Bus 0...\n");
+        boost::thread wt0l = startWam(*pm0, wam0_state, wamThread0<4>, wamThread0<7>);
+        wt0 = &wt0l;
+        
+        ProductManager pm1l("/etc/barrett/bus1/default.conf");
+        pm1 = &pm1l;
+        printf("Starting the WAM on Bus 1...\n");
+        boost::thread wt1l = startWam(*pm1, wam1_state, wamThread1<4>, wamThread1<7>);
+        wt1 = &wt1l;
+    }
+
+    
+    *wt0.join();
+    *wt1.join();
     handIPad.interrupt();
 	
 
@@ -195,27 +227,17 @@ void handIPadController(ProductManager& pm0, ProductManager& pm1)
             wam0_state.shouldMoveHome     = document["wam0_shouldMoveHome"].GetInt();
             wam1_state.shouldMoveHome     = document["wam1_shouldMoveHome"].GetInt();
             
-            //printf("\nwam1_state.replayTeach - %d\n", wam1_state.replayTeach);
+            //printf("\nwam1_state.replayTeach - %d\n", wam1_state.
+            Teach);
             
             hand0_shouldInit = document["hand0_shouldInit"].GetInt();
             hand1_shouldInit = document["hand1_shouldInit"].GetInt();
         
-            //printf("hand0_shouldInit = %d\n", hand0_shouldInit);
+
             const Value& hand0_finger = document["hand0_finger"]; // Using a reference for consecutive access is handy and faster.
-            /*
-            assert(hand0_finger.IsArray());
-            for (SizeType i = 0; i < hand0_finger.Size(); i++) // rapidjson uses SizeType instead of size_t.
-                //printf("hand0_finger[%d] = %4.4f\n", i, hand0_finger[i].GetDouble());
-            */
             
             const Value& hand1_finger = document["hand1_finger"]; // Using a reference for consecutive access is handy and faster.
-            /*
-            assert(hand1_finger.IsArray());
-            for (SizeType i = 0; i < hand1_finger.Size(); i++) // rapidjson uses SizeType instead of size_t.
-                printf("hand1_finger[%d] = %4.4f\n", i, hand1_finger[i].GetDouble());
-            */
-            
-            
+
             
             if(hand0_shouldInit)
             {

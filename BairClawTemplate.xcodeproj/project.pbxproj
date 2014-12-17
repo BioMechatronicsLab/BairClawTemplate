@@ -14,6 +14,9 @@
 		871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B503418231E3F0000C597 /* BairClawInterface.cpp */; };
 		871B503918231E3F0000C597 /* EPOSInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 871B503618231E3F0000C597 /* EPOSInterface.cpp */; };
 		8723456A193563E0008D398A /* BairClawActuationJ.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87234569193563E0008D398A /* BairClawActuationJ.cpp */; };
+		87554C7E1A39040700A26B58 /* wamPicker0.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87554C7D1A39040700A26B58 /* wamPicker0.cpp */; };
+		87554C801A3F636300A26B58 /* wamJointPosRecorder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87554C7F1A3F636300A26B58 /* wamJointPosRecorder.cpp */; };
+		87554C821A3FC48700A26B58 /* turnTablePhoneController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87554C811A3FC48700A26B58 /* turnTablePhoneController.cpp */; };
 		87B6959118281D11002FD276 /* example.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959018281D11002FD276 /* example.c */; };
 		87B695931828319A002FD276 /* log_sg_data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87B695921828319A002FD276 /* log_sg_data.cpp */; };
 		87B6959818286CAC002FD276 /* BCbiotac.c in Sources */ = {isa = PBXBuildFile; fileRef = 87B6959418286CAC002FD276 /* BCbiotac.c */; };
@@ -21,6 +24,7 @@
 		87D6F97F19BA0FDF0088C4BA /* dualWAMPhotoShoot0.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D6F97D19BA0FDF0088C4BA /* dualWAMPhotoShoot0.cpp */; };
 		87D6F98019BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87D6F97E19BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp */; };
 		87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87E511381832CF8B00DBC8C7 /* BairClawMain-old.cpp */; };
+		87EA5D451A40E44000AEAABC /* nsfVideoShoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87EA5D441A40E44000AEAABC /* nsfVideoShoot.cpp */; };
 		87F2418F19B7894E00399B52 /* dualTeachAndPlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F2418E19B7894E00399B52 /* dualTeachAndPlay.cpp */; };
 		87FCA35419B91DD300AB8872 /* dualWAMPhotoShoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */; };
 /* End PBXBuildFile section */
@@ -50,6 +54,9 @@
 		871B503718231E3F0000C597 /* EPOSInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EPOSInterface.h; sourceTree = "<group>"; };
 		8723456819354605008D398A /* BairClawActuationJ.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawActuationJ.h; sourceTree = "<group>"; };
 		87234569193563E0008D398A /* BairClawActuationJ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BairClawActuationJ.cpp; sourceTree = "<group>"; };
+		87554C7D1A39040700A26B58 /* wamPicker0.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wamPicker0.cpp; sourceTree = "<group>"; };
+		87554C7F1A3F636300A26B58 /* wamJointPosRecorder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wamJointPosRecorder.cpp; sourceTree = "<group>"; };
+		87554C811A3FC48700A26B58 /* turnTablePhoneController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = turnTablePhoneController.cpp; sourceTree = "<group>"; };
 		8785AB6F187CBC0600AADB75 /* BairClawDataPlayBack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BairClawDataPlayBack.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		87B6958F18281D11002FD276 /* BairClawTemplate.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; name = BairClawTemplate.1; path = Resources/BairClawTemplate.1; sourceTree = "<group>"; };
 		87B6959018281D11002FD276 /* example.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = example.c; path = Resources/example.c; sourceTree = "<group>"; };
@@ -62,6 +69,8 @@
 		87D6F97E19BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualWAMPhotoShoot1.cpp; sourceTree = "<group>"; };
 		87E4433A184E5EFC00BDD2AD /* codeSnidbits.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = codeSnidbits.h; sourceTree = "<group>"; };
 		87E511381832CF8B00DBC8C7 /* BairClawMain-old.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "BairClawMain-old.cpp"; path = "Resources/BairClawMain-old.cpp"; sourceTree = "<group>"; };
+		87EA5D441A40E44000AEAABC /* nsfVideoShoot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nsfVideoShoot.cpp; sourceTree = "<group>"; };
+		87EA5D461A40EDDD00AEAABC /* trajFile.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = trajFile.txt; sourceTree = "<group>"; };
 		87F2418E19B7894E00399B52 /* dualTeachAndPlay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualTeachAndPlay.cpp; sourceTree = "<group>"; };
 		87FCA35319B91DD300AB8872 /* dualWAMPhotoShoot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualWAMPhotoShoot.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -81,6 +90,8 @@
 			isa = PBXGroup;
 			children = (
 				870303D719BF887500C09CCD /* dualWAMIPadController.cpp */,
+				87554C7D1A39040700A26B58 /* wamPicker0.cpp */,
+				87554C7F1A3F636300A26B58 /* wamJointPosRecorder.cpp */,
 				87554C7C1A3810FE00A26B58 /* OldDualWAMcode */,
 			);
 			name = dualWAMcode;
@@ -118,6 +129,7 @@
 				8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */,
 				87E4433A184E5EFC00BDD2AD /* codeSnidbits.h */,
 				870303D619BF87A600C09CCD /* dualWAMcode */,
+				87554C831A3FC49000A26B58 /* FunPrograms */,
 				87CC3CBF1936B5500084E727 /* SupportFiles */,
 				87B6958E18281C93002FD276 /* Resources */,
 			);
@@ -153,6 +165,16 @@
 				87D6F97E19BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp */,
 			);
 			name = OldDualWAMcode;
+			sourceTree = "<group>";
+		};
+		87554C831A3FC49000A26B58 /* FunPrograms */ = {
+			isa = PBXGroup;
+			children = (
+				87554C811A3FC48700A26B58 /* turnTablePhoneController.cpp */,
+				87EA5D441A40E44000AEAABC /* nsfVideoShoot.cpp */,
+				87EA5D461A40EDDD00AEAABC /* trajFile.txt */,
+			);
+			name = FunPrograms;
 			sourceTree = "<group>";
 		};
 		87B6958E18281C93002FD276 /* Resources */ = {
@@ -249,6 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				87D6F97F19BA0FDF0088C4BA /* dualWAMPhotoShoot0.cpp in Sources */,
+				87554C7E1A39040700A26B58 /* wamPicker0.cpp in Sources */,
 				871B503918231E3F0000C597 /* EPOSInterface.cpp in Sources */,
 				87F2418F19B7894E00399B52 /* dualTeachAndPlay.cpp in Sources */,
 				87B695931828319A002FD276 /* log_sg_data.cpp in Sources */,
@@ -259,9 +282,12 @@
 				87B6959918286CAC002FD276 /* cheetah.c in Sources */,
 				87063B78199ABE6D0090B45F /* filters.cpp in Sources */,
 				8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */,
+				87EA5D451A40E44000AEAABC /* nsfVideoShoot.cpp in Sources */,
+				87554C821A3FC48700A26B58 /* turnTablePhoneController.cpp in Sources */,
 				87B6959818286CAC002FD276 /* BCbiotac.c in Sources */,
 				87FCA35419B91DD300AB8872 /* dualWAMPhotoShoot.cpp in Sources */,
 				871B502C18231DF50000C597 /* BairClawMain.cpp in Sources */,
+				87554C801A3F636300A26B58 /* wamJointPosRecorder.cpp in Sources */,
 				87D6F98019BA0FDF0088C4BA /* dualWAMPhotoShoot1.cpp in Sources */,
 				87B6959118281D11002FD276 /* example.c in Sources */,
 			);
