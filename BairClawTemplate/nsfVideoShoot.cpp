@@ -313,6 +313,7 @@ template <size_t DOF> void wamThread0(ProductManager& pm, systems::Wam<DOF>& wam
 			printf("\nCheck that iter vec makes sense numRecords = %4.0ld\n Press [Enter] to continue...",lr2.numRecords());
 			waitForEnter();
 		}
+        wam.moveTo(spline2.eval(spline2.initialS()));
 		systems::Callback<double, jp_type> trajectory2(boost::ref(spline2));
 		connect(time.output, trajectory2.input);
 	//---------------------------------------------------------------------------------------

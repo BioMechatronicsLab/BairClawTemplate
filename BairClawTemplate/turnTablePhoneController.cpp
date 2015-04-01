@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 	
 
     EPOS2 turntable(1,&bus);
-
+    turntable.reset();
     turntable.enable();
 	turntable.SetPositionRegulatorGain( 2000, 80, 800);
 	turntable.SetPositionProfile( 4, 2, 2);

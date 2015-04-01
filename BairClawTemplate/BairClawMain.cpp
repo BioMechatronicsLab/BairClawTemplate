@@ -1041,6 +1041,8 @@ int main(int argc, char** argv) {
     // setTendonOffsets -------------------------------------------------
     btsleep(0.5);
     bairClaw.digit[0].setTendonForceOffset();
+    
+    
     printf("Press [Enter] to START display");
     fflush(stdout);
     getchar();
@@ -1069,7 +1071,15 @@ int main(int argc, char** argv) {
 
    
     bairClaw.digit[0].FEmotor.resetAll();
+    
+    
+    printf("Press [Enter] to ShutDown");
+    fflush(stdout);
+    getchar();
+    
     going = false;
+
+    
     
     d.join(); //Stop display thread
     BCMatlabVis.join();

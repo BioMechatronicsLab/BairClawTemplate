@@ -141,7 +141,7 @@ template <size_t DOF> void wamThread0(ProductManager& pm, systems::Wam<DOF>& wam
     jp[1] = -2.0;
     jp[3] =  2.2;
      */
-    //Only run this section of code if not both wam are running
+    //Only run this section of code if ONE WAM is running
     printf("Press [Enter] to start wam thread");
     waitForEnter();
     
