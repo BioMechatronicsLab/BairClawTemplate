@@ -244,7 +244,8 @@ protected:
         bairClaw.digit[0].PIPmotor.readAnalog1();
         rt_task_sleep(rt_timer_ns2ticks(delay));//
         bairClaw.digit[0].PIPmotor.readAnalog2();
-        
+    
+      
         outputValue->setData(&count);
         jointsOutputValue->setData(&joints);
         
@@ -959,7 +960,7 @@ int main(int argc, char** argv) {
 	// Create execution manager this sets the time per operate(period)
 	systems::RealTimeExecutionManager mem(0.005, 50);
     
-    // Instantiate Systems
+    // Init Systems
     BCProductManager peSys;
 	//systems::PrintToStream<double> printSys(&mem, "Result: ");
     systems::Ramp time(&mem, 1.0);

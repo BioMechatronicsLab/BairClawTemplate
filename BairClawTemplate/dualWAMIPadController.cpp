@@ -327,21 +327,21 @@ void handIPadController(ProductManager& pm0, ProductManager& pm1)
                 double fingerSpread1 = hand1_finger[SizeType(3)].GetDouble();
                 hand1.velocityMove(hjp_t(fingerPos1,fingerPos1,fingerPos1,fingerSpread1), Hand::WHOLE_HAND);
             }
-// Doesn't work might damage hand!!!!!
-//            if(wam0_state.shouldMoveHome)
-//            {
-//                hand0.trapezoidalMove(open, Hand::GRASP);
-//                hand0.trapezoidalMove(close, Hand::SPREAD);
-//                hand0.trapezoidalMove(partial, Hand::GRASP);
-//                hand0.idle();
-//            }
-//            if(wam1_state.shouldMoveHome)
-//            {
-//                hand1.trapezoidalMove(open, Hand::GRASP);
-//                hand1.trapezoidalMove(close, Hand::SPREAD);
-//                hand1.trapezoidalMove(partial, Hand::GRASP);
-//                hand1.idle();
-//            }
+            // Doesn't work might damage hand!!!!!
+            //            if(wam0_state.shouldMoveHome)
+            //            {
+            //                hand0.trapezoidalMove(open, Hand::GRASP);
+            //                hand0.trapezoidalMove(close, Hand::SPREAD);
+            //                hand0.trapezoidalMove(partial, Hand::GRASP);
+            //                hand0.idle();
+            //            }
+            //            if(wam1_state.shouldMoveHome)
+            //            {
+            //                hand1.trapezoidalMove(open, Hand::GRASP);
+            //                hand1.trapezoidalMove(close, Hand::SPREAD);
+            //                hand1.trapezoidalMove(partial, Hand::GRASP);
+            //                hand1.idle();
+            //            }
             
         }
         else

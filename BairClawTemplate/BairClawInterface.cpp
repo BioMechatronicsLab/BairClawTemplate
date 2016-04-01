@@ -66,7 +66,7 @@ void BCDigit::calcTendonForce()
     mcpFest = 0.009806*(-5.971124e+02 + (+8.402597e-01 * FEmotor.A2) + (-4.617917e-02 * FEmotor.A1) + (-1.800978e-02 * PIPmotor.A2) + (-5.823183e-02 * PIPmotor.A1) - (mcpFestOffset));
     mcpEest = 0.009806*(-1.753974e+03 + (-1.241008e-02 * FEmotor.A2) + (+2.670576e+00 * FEmotor.A1) + (-3.922166e-02 * PIPmotor.A2) + (-1.786393e-01 * PIPmotor.A1) - (mcpEestOffset));
     pipFest = 0.009806*(-8.943469e+02 + (-3.292929e-02 * FEmotor.A2) + (-2.342654e-02 * FEmotor.A1) + (+9.952569e-01 * PIPmotor.A2) + (-5.316950e-02 * PIPmotor.A1) - (pipFestOffset));
-    pipEest = 0.009806*(-2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1) - (pipEestOffset)) ;
+    pipEest = 0.009806*(-2.949234e+03 + (-9.191377e-02 * FEmotor.A2) + (-1.433349e-01 * FEmotor.A1) + (+8.367845e-02 * PIPmotor.A2) + (+3.056697e+00 * PIPmotor.A1) - (pipEestOffset));
     
 }
     
@@ -135,6 +135,9 @@ void BCDigit::calcJointAngles(){
     jointValRad[3] = ( -0.0703793344 * pow(scaledJointVal[3],4) ) + ( -0.1606000938 * pow(scaledJointVal[3],3) ) + ( -0.0562508357 * pow(scaledJointVal[3],2) ) + ( -0.2914736187 * pow(scaledJointVal[3],1) ) + ( 0.6969941865 * pow(scaledJointVal[3],0) );
 }
 
+/** 
+* Calculated DH params when requested. Expensive calcs so only do it when necessary.
+*/ 
 void BCDigit::calcDHparams(){
     
     DHp.theta << jointValRad[0], jointValRad[1], jointValRad[2], jointValRad[3];
@@ -145,16 +148,10 @@ void BCDigit::calcDHparams(){
 
 }
     
+// Forward calculation for endeffector force estimates from joint torques
 void BCDigit::calcEndEffectorForce()
 {
-    //Be sure to run required function before call this one.
-    // calcPercentages();
-    // calcJointAngles();
-    // calcTendonForec();
-    // calcJacobianActuation();
-    // calcDHparams();
-    
-    // fe = pinv(Jm') * Ja' * ft
+
     DHp.tendonForce(2,0) =  mcpFest;
     DHp.tendonForce(3,0) =  mcpEest;
     DHp.tendonForce(4,0) =  pipFest;
@@ -165,24 +162,8 @@ void BCDigit::calcEndEffectorForce()
     
 
 }
-    
-void BCDigit::vis(){
-	/*
-     if(isInit)
-     {
-     bool visgoing = 1;
-     printf("About to start visualization thread ");
-     boost::thread visthread(BairClawVisThread, &(*this), &visgoing);
-     detail::waitForEnter();
-     visgoing = false;
-     visthread.join();
-     }
-     else
-     {
-     printf("Need to initialize digit prior to visualization\n");
-     }
-     */
-}
+
+// Initialize static friction for unloaded state.
 void BCDigit::setStaticFriction(){
 	
     printf("In setStaticFriction() enabled - %s \n",FEmotor.isEnabled ? "true":"false");
@@ -226,6 +207,7 @@ void BCDigit::setStaticFriction(){
 
 }
 
+// Applies motor torque to match static friction depending on driving direction.
 void BCDigit::backDrive(){
 	/*
      int preFE;
@@ -266,6 +248,7 @@ void BCDigit::backDrive(){
      }*/
     
 }
+    
 void BCHand::print(){
   //- NICE DISPLAY -----------------------------------------
     for(int i=0; i < digit.size(); i++)

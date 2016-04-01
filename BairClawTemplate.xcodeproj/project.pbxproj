@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7E44D3401C459A1600DC7069 /* IPhoneControllerLocalWAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E44D33F1C459A1600DC7069 /* IPhoneControllerLocalWAM.cpp */; };
 		870303D819BF887500C09CCD /* dualWAMIPadController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 870303D719BF887500C09CCD /* dualWAMIPadController.cpp */; };
 		87063B78199ABE6D0090B45F /* filters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87063B77199ABE6D0090B45F /* filters.cpp */; };
 		8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8706F03C1901E50200EFDB4F /* MotorModCalibration.cpp */; };
@@ -42,6 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7E44D33F1C459A1600DC7069 /* IPhoneControllerLocalWAM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPhoneControllerLocalWAM.cpp; sourceTree = "<group>"; };
 		870303D719BF887500C09CCD /* dualWAMIPadController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dualWAMIPadController.cpp; sourceTree = "<group>"; };
 		87063B76199ABE6D0090B45F /* filters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filters.h; sourceTree = "<group>"; };
 		87063B77199ABE6D0090B45F /* filters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filters.cpp; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				870303D719BF887500C09CCD /* dualWAMIPadController.cpp */,
+				7E44D33F1C459A1600DC7069 /* IPhoneControllerLocalWAM.cpp */,
 				87554C7D1A39040700A26B58 /* wamPicker0.cpp */,
 				87554C7F1A3F636300A26B58 /* wamJointPosRecorder.cpp */,
 				87554C7C1A3810FE00A26B58 /* OldDualWAMcode */,
@@ -279,6 +282,7 @@
 				871B503818231E3F0000C597 /* BairClawInterface.cpp in Sources */,
 				87E511391832CF8B00DBC8C7 /* BairClawMain-old.cpp in Sources */,
 				870303D819BF887500C09CCD /* dualWAMIPadController.cpp in Sources */,
+				7E44D3401C459A1600DC7069 /* IPhoneControllerLocalWAM.cpp in Sources */,
 				87B6959918286CAC002FD276 /* cheetah.c in Sources */,
 				87063B78199ABE6D0090B45F /* filters.cpp in Sources */,
 				8706F03E1901E50200EFDB4F /* MotorModCalibration.cpp in Sources */,

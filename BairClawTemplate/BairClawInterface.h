@@ -59,7 +59,10 @@ void DH2T( MatrixBase<DerivedA>& DH, MatrixBase<DerivedB>& T);
 #define PULLEY_3        0.006223
 #define PULLEY_4        0.006350
     
-    
+/**
+* Used to define DH params for 4 DOF robot link
+*
+*/
 class DHparams
 {
 public: //remove later once debuging
@@ -148,6 +151,7 @@ public: //remove later once debuging
             }
         }
     }
+    
     /** \returns
      *\note Function to create Jacobial 6 x n where n is the number of links
      * Ti = 6x n*4 matrix that is a list of R01,R20....,Rn0
@@ -217,9 +221,7 @@ public:
     DHparams DHp;
     // Static member variables & functions //
 
-    
 
-    
     // Constructor. Minimal error checking be carefule and make sure you
     // know what you are doing!!
 	BCDigit(int node, const bus::CANSocket* busSet): FEmotor( node, busSet), PIPmotor( node+1, busSet), ADABmotor( node+2, busSet), node(node)
